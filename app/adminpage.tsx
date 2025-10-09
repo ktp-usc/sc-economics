@@ -1,10 +1,12 @@
-import { useState } from 'react';
+"use client";
+
+import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './adminpageComponents/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './adminpageComponents/ui/card';
 import { ItemsManagement } from './adminpageComponents/ItemsManagement';
 import { DonationSettings } from './adminpageComponents/DonationSettings';
 import { CustomerData } from './adminpageComponents/CustomerData';
-import { Package, DollarSign, Users, Settings } from 'lucide-react';
+import { Package, DollarSign, Users} from 'lucide-react';
 
 export default function App() {
   return (
