@@ -612,7 +612,7 @@ export function ItemsManagement() {
                                                 <AlertDialogHeader>
                                                     <AlertDialogTitle>Delete Item</AlertDialogTitle>
                                                     <AlertDialogDescription>
-                                                        Are you sure you want to delete "{item.name}"? This action cannot be undone.
+                                                        Are you sure you want to delete {item.name}? This action cannot be undone.
                                                     </AlertDialogDescription>
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
