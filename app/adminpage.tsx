@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
-import { ItemsManagement } from './components/ItemsManagement';
-import { DonationSettings } from './components/DonationSettings';
-import { CustomerData } from './components/CustomerData';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './adminpageComponents/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './adminpageComponents/ui/card';
+import { ItemsManagement } from './adminpageComponents/ItemsManagement';
+import { DonationSettings } from './adminpageComponents/DonationSettings';
+import { CustomerData } from './adminpageComponents/CustomerData';
 import { Package, DollarSign, Users, Settings } from 'lucide-react';
 
 export default function App() {
