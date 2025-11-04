@@ -7,6 +7,7 @@ import { ItemsManagement } from '@/components/ItemsManagement';
 import { DonationSettings } from '@/components/DonationSettings';
 import { CustomerData } from '@/components/CustomerData';
 import { Package, DollarSign, Users} from 'lucide-react';
+import dataWriter from '@/components/dataWriter';
 
 export default function App() {
     return (
