@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SC Economics Donations",
-  description: "Pay fees or donate now to SC Economics!",
+    title: "SC ECONOMICS - Professional Development",
+    description: "Transform your teaching with expert-led workshops and events designed specifically for educators to integrate economics education.",
 };
 
 export default function RootLayout({
