@@ -1,4 +1,7 @@
-import { useState, useRef } from 'react';
+
+'use client';
+import React, {useState, useRef, useEffect} from 'react';
+import { useQuery } from "@tanstack/react-query";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,12 +12,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Edit2, Trash2, Upload, X } from 'lucide-react';
-import { Item, createItem } from '@/components/dataWriter';
+import { createItem, deleteItem  } from '@/lib/dataWriter';
+import {Item, PurchaseType} from "@prisma/client";
 
 type ListedItem = {
     id: string;
     name: string;
-    type: 'workshop' | 'event' | 'merchandise' | 'other';
+    type: PurchaseType;
     description: string;
     price: number;
     capacity?: number;
@@ -24,12 +28,9 @@ type ListedItem = {
     image?: string;
 };
 
-const listedItems: ListedItem[] = [
-
-];
 
 export function ItemsManagement() {
-    const [items, setItems] = useState<ListedItem[]>(listedItems);
+    const [items, setItems] = useState<ListedItem[]>([]);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<ListedItem | null>(null);
     const [formData, setFormData] = useState({
@@ -44,6 +45,43 @@ export function ItemsManagement() {
     });
     const fileInputRef = useRef<HTMLInputElement>(null);
     const editFileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        let mounted = true;
+        async function fetchItems() {
+            try {
+                const res = await fetch('/api/item');
+                if (!res.ok) throw new Error(`Failed to fetch items: ${res.status}`);
+                const data = await res.json();
+
+                // Map backend shape to ListedItem. Adjust if your API returns different fields.
+                const mapped: ListedItem[] = (data || []).map((it: any) => ({
+                    id: String(it.id),
+                    name: String(it.name ?? ''),
+                    type: it.type as PurchaseType,
+                    description: String(it.description ?? ''),
+                    // Prisma Decimal may come back as string — coerce to number
+                    price: typeof it.price === 'string' ? parseFloat(it.price) : Number(it.price ?? 0),
+                    capacity: it.capacity === null || it.capacity === undefined ? undefined : Number(it.capacity),
+                    available: Number(it.available ?? 0),
+                    status: (it.status === 'inactive' ? 'inactive' : 'active'),
+                    // normalize createdAt to YYYY-MM-DD (same format you used)
+                    createdAt: it.createdAt ? new Date(it.createdAt).toISOString().split('T')[0] : '',
+                    image: it.image ?? undefined
+                }));
+
+                if (mounted) setItems(mapped);
+            } catch (err) {
+                // keep console error for debugging
+                // you can show a UI error here if desired
+                // eslint-disable-next-line no-console
+                console.error('Error fetching items', err);
+            }
+        }
+
+        fetchItems();
+        return () => { mounted = false; };
+    }, []);
 
     const resetForm = () => {
         setFormData({
@@ -81,7 +119,18 @@ export function ItemsManagement() {
         };
 
         if (editingItem) {
-            setItems(items.map(item => item.id === editingItem.id ? itemData : item));
+
+            // const editedItemData = {
+            //     id: editingItem.id,
+            //     name: editingItem.name,
+            //     type: editingItem.type,
+            //     description: editingItem.description,
+            //     price: editingItem.price,
+            //     capacity: editingItem.capacity || 20,
+            //     available: editingItem.available,
+            //     image: editingItem.image || ""
+            // }
+            // const editedItem = await newItem(editedItemData);
         } else {
             setItems([...items, itemData]);
             const newItemData: Item = {
@@ -91,7 +140,7 @@ export function ItemsManagement() {
                 price: itemData.price,
                 capacity: itemData.capacity || 20,
                 available: itemData.available,
-                imageUrl: itemData.image || ""
+                image: itemData.image || ""
             }
             const newItem = await createItem(newItemData);
         }
@@ -115,8 +164,11 @@ export function ItemsManagement() {
         });
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         setItems(items.filter(item => item.id !== id));
+        console.log(id)
+        await deleteItem(id);
+
     };
 
     const getTypeColor = (type: ListedItem['type']) => {
@@ -205,7 +257,6 @@ export function ItemsManagement() {
                                             <SelectItem value="workshop">Workshop</SelectItem>
                                             <SelectItem value="event">Event</SelectItem>
                                             <SelectItem value="merchandise">Merchandise</SelectItem>
-                                            <SelectItem value="other">Other</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -437,7 +488,6 @@ export function ItemsManagement() {
                                                                     <SelectItem value="workshop">Workshop</SelectItem>
                                                                     <SelectItem value="event">Event</SelectItem>
                                                                     <SelectItem value="merchandise">Merchandise</SelectItem>
-                                                                    <SelectItem value="other">Other</SelectItem>
                                                                 </SelectContent>
                                                             </Select>
                                                         </div>

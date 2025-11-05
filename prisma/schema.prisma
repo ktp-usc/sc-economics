@@ -26,10 +26,9 @@ model Item {
   name         String
   type         PurchaseType
   description  String
-  price        Decimal
+  price        Float
   capacity     Int?
   available    Int
-  status       Status
   createdAt    DateTime @default(now())
   image        String
 }
@@ -78,10 +77,7 @@ enum PurchaseStatus{
   refunded
 }
 
-enum Status{
-  active
-  inactive
-}
+
 
 // model Types {
 //   id Int @id @default(autoincrement())

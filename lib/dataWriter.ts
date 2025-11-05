@@ -1,25 +1,35 @@
 import React, { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import {Item} from "@prisma/client";
 
-export type Item = {
+
+
+export async function createItem(item: {
     name: string;
     type: string;
     description: string;
     price: number;
     capacity: number;
     available: number;
-    imageUrl: string;
-}
-
-
-export async function createItem(item: Item) {
+    image: string
+}) {
     const res = await fetch("/api/item", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ item }),
+        body: JSON.stringify( item ),
     });
 
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Failed to create item");
     return data.item ?? data;
+}
+
+export async function deleteItem(id: string) {
+    const res = await fetch(`/api/item`, {
+        method: 'DELETE' ,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify( id ),
+    });
+    if (!res.ok) throw new Error('Failed to delete item');
+    return res.json();
 }
