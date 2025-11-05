@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import svgPaths from "@/components/svg-b3ps3eyihg";
 
 interface InfoGatheringPageProps {
     donationAmount?: number;
@@ -62,7 +61,7 @@ export function InfoGatheringPage({ donationAmount, donationType, registrationDa
                         <div className="w-4 h-4">
                             <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
                                 <path
-                                    d={svgPaths.p203476e0}
+                                    d="M8 12.6667L3.33333 8L8 3.33333"
                                     stroke="currentColor"
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
