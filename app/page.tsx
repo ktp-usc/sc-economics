@@ -5,8 +5,8 @@ import { Header } from "@/app/header/page";
 import { ProductCatalog } from "@/app/catalog/page";
 import { DonationPage } from "@/app/donations/page";
 import { InfoGatheringPage } from "@/app/data_collection/page";
-import { toast } from "react-toastify"
 import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 type PageType = 'fees' | 'donation' | 'info';
 
