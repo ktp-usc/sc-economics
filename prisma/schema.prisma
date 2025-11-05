@@ -6,11 +6,32 @@
 
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Todo {
+  id        String   @id @default(cuid())
+  title     String
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Item {
+  id           String @id @default(uuid())
+  name         String
+  type         PurchaseType
+  description  String
+  price        Decimal
+  capacity     Int?
+  available    Int
+  status       Status
+  createdAt    DateTime @default(now())
+  image        String
 }
 
 
@@ -55,6 +76,11 @@ enum PurchaseStatus{
   completed
   pending
   refunded
+}
+
+enum Status{
+  active
+  inactive
 }
 
 // model Types {
