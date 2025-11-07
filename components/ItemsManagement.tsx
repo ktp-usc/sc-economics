@@ -1,4 +1,7 @@
-import { useState, useRef } from 'react';
+
+'use client';
+import React, {useState, useRef, useEffect} from 'react';
+import { useQuery } from "@tanstack/react-query";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,11 +12,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Edit2, Trash2, Upload, X } from 'lucide-react';
+import { createItem, deleteItem  } from '@/lib/dataWriter';
+import {Item, PurchaseType} from "@prisma/client";
 
-type Item = {
+type ListedItem = {
     id: string;
     name: string;
-    type: 'workshop' | 'event' | 'merchandise' | 'other';
+    type: PurchaseType;
     description: string;
     price: number;
     capacity?: number;
@@ -23,68 +28,60 @@ type Item = {
     image?: string;
 };
 
-const mockItems: Item[] = [
-    {
-        id: '1',
-        name: 'Web Development Workshop',
-        type: 'workshop',
-        description: 'Learn the fundamentals of web development with HTML, CSS, and JavaScript',
-        price: 99.99,
-        capacity: 20,
-        available: 15,
-        status: 'active',
-        createdAt: '2024-01-15'
-    },
-    {
-        id: '2',
-        name: 'UX Design Masterclass',
-        type: 'workshop',
-        description: 'Advanced UX design principles and hands-on practice',
-        price: 149.99,
-        capacity: 15,
-        available: 8,
-        status: 'active',
-        createdAt: '2024-01-20'
-    },
-    {
-        id: '3',
-        name: 'Annual Conference Ticket',
-        type: 'event',
-        description: 'Full access to our annual tech conference',
-        price: 299.99,
-        capacity: 100,
-        available: 45,
-        status: 'active',
-        createdAt: '2024-02-01'
-    },
-    {
-        id: '4',
-        name: 'Organization T-Shirt',
-        type: 'merchandise',
-        description: 'High-quality cotton t-shirt with organization logo',
-        price: 25.00,
-        available: 50,
-        status: 'active',
-        createdAt: '2024-01-10'
-    }
-];
 
 export function ItemsManagement() {
-    const [items, setItems] = useState<Item[]>(mockItems);
+    const [items, setItems] = useState<ListedItem[]>([]);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-    const [editingItem, setEditingItem] = useState<Item | null>(null);
+    const [editingItem, setEditingItem] = useState<ListedItem | null>(null);
     const [formData, setFormData] = useState({
         name: '',
-        type: 'workshop' as Item['type'],
+        type: 'workshop' as ListedItem['type'],
         description: '',
         price: '',
         capacity: '',
         available: '',
-        status: 'active' as Item['status'],
+        status: 'active' as ListedItem['status'],
         image: ''
     });
     const fileInputRef = useRef<HTMLInputElement>(null);
     const editFileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        let mounted = true;
+        async function fetchItems() {
+            try {
+                const res = await fetch('/api/item');
+                if (!res.ok) throw new Error(`Failed to fetch items: ${res.status}`);
+                const data = await res.json();
+
+                // Map backend shape to ListedItem. Adjust if your API returns different fields.
+                const mapped: ListedItem[] = (data || []).map((it: any) => ({
+                    id: String(it.id),
+                    name: String(it.name ?? ''),
+                    type: it.type as PurchaseType,
+                    description: String(it.description ?? ''),
+                    // Prisma Decimal may come back as string — coerce to number
+                    price: typeof it.price === 'string' ? parseFloat(it.price) : Number(it.price ?? 0),
+                    capacity: it.capacity === null || it.capacity === undefined ? undefined : Number(it.capacity),
+                    available: Number(it.available ?? 0),
+                    status: (it.status === 'inactive' ? 'inactive' : 'active'),
+                    // normalize createdAt to YYYY-MM-DD (same format you used)
+                    createdAt: it.createdAt ? new Date(it.createdAt).toISOString().split('T')[0] : '',
+                    image: it.image ?? undefined
+                }));
+
+                if (mounted) setItems(mapped);
+            } catch (err) {
+                // keep console error for debugging
+                // you can show a UI error here if desired
+                // eslint-disable-next-line no-console
+                console.error('Error fetching items', err);
+            }
+        }
+
+        fetchItems();
+        return () => { mounted = false; };
+    }, []);
 
     const resetForm = () => {
         setFormData({
@@ -105,10 +102,10 @@ export function ItemsManagement() {
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const itemData: Item = {
+        const itemData: ListedItem = {
             id: editingItem?.id || Date.now().toString(),
             name: formData.name,
             type: formData.type,
@@ -122,9 +119,30 @@ export function ItemsManagement() {
         };
 
         if (editingItem) {
-            setItems(items.map(item => item.id === editingItem.id ? itemData : item));
+
+            // const editedItemData = {
+            //     id: editingItem.id,
+            //     name: editingItem.name,
+            //     type: editingItem.type,
+            //     description: editingItem.description,
+            //     price: editingItem.price,
+            //     capacity: editingItem.capacity || 20,
+            //     available: editingItem.available,
+            //     image: editingItem.image || ""
+            // }
+            // const editedItem = await newItem(editedItemData);
         } else {
             setItems([...items, itemData]);
+            const newItemData: Item = {
+                name: itemData.name,
+                type: itemData.type,
+                description: itemData.description,
+                price: itemData.price,
+                capacity: itemData.capacity || 20,
+                available: itemData.available,
+                image: itemData.image || ""
+            }
+            const newItem = await createItem(newItemData);
         }
 
         resetForm();
@@ -132,7 +150,7 @@ export function ItemsManagement() {
         setEditingItem(null);
     };
 
-    const handleEdit = (item: Item) => {
+    const handleEdit = (item: ListedItem) => {
         setEditingItem(item);
         setFormData({
             name: item.name,
@@ -146,11 +164,14 @@ export function ItemsManagement() {
         });
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         setItems(items.filter(item => item.id !== id));
+        console.log(id)
+        await deleteItem(id);
+
     };
 
-    const getTypeColor = (type: Item['type']) => {
+    const getTypeColor = (type: ListedItem['type']) => {
         switch (type) {
             case 'workshop': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
             case 'event': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
@@ -228,7 +249,7 @@ export function ItemsManagement() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="type">Type</Label>
-                                    <Select value={formData.type} onValueChange={(value: Item['type']) => setFormData({ ...formData, type: value })}>
+                                    <Select value={formData.type} onValueChange={(value: ListedItem['type']) => setFormData({ ...formData, type: value })}>
                                         <SelectTrigger>
                                             <SelectValue />
                                         </SelectTrigger>
@@ -236,7 +257,6 @@ export function ItemsManagement() {
                                             <SelectItem value="workshop">Workshop</SelectItem>
                                             <SelectItem value="event">Event</SelectItem>
                                             <SelectItem value="merchandise">Merchandise</SelectItem>
-                                            <SelectItem value="other">Other</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -353,7 +373,7 @@ export function ItemsManagement() {
 
                             <div className="space-y-2">
                                 <Label htmlFor="status">Status</Label>
-                                <Select value={formData.status} onValueChange={(value: Item['status']) => setFormData({ ...formData, status: value })}>
+                                <Select value={formData.status} onValueChange={(value: ListedItem['status']) => setFormData({ ...formData, status: value })}>
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
@@ -460,7 +480,7 @@ export function ItemsManagement() {
                                                         </div>
                                                         <div className="space-y-2">
                                                             <Label htmlFor="edit-type">Type</Label>
-                                                            <Select value={formData.type} onValueChange={(value: Item['type']) => setFormData({ ...formData, type: value })}>
+                                                            <Select value={formData.type} onValueChange={(value: ListedItem['type']) => setFormData({ ...formData, type: value })}>
                                                                 <SelectTrigger>
                                                                     <SelectValue />
                                                                 </SelectTrigger>
@@ -468,7 +488,6 @@ export function ItemsManagement() {
                                                                     <SelectItem value="workshop">Workshop</SelectItem>
                                                                     <SelectItem value="event">Event</SelectItem>
                                                                     <SelectItem value="merchandise">Merchandise</SelectItem>
-                                                                    <SelectItem value="other">Other</SelectItem>
                                                                 </SelectContent>
                                                             </Select>
                                                         </div>
@@ -581,7 +600,7 @@ export function ItemsManagement() {
 
                                                     <div className="space-y-2">
                                                         <Label htmlFor="edit-status">Status</Label>
-                                                        <Select value={formData.status} onValueChange={(value: Item['status']) => setFormData({ ...formData, status: value })}>
+                                                        <Select value={formData.status} onValueChange={(value: ListedItem['status']) => setFormData({ ...formData, status: value })}>
                                                             <SelectTrigger>
                                                                 <SelectValue />
                                                             </SelectTrigger>
