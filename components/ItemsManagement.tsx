@@ -12,7 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Edit2, Trash2, Upload, X } from 'lucide-react';
-import { createItem, deleteItem  } from '@/lib/dataWriter';
+import { createItem, deleteItem  } from '@/lib/item';
 import {Item, PurchaseType} from "@prisma/client";
 
 type ListedItem = {
