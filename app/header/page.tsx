@@ -2,8 +2,8 @@ import { GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface HeaderProps {
-    currentPage: 'fees' | 'donation' | 'info';
-    onNavigate: (page: 'fees' | 'donation' | 'info') => void;
+    currentPage: 'fees' | 'donation' | 'info' | 'admin';
+    onNavigate: (page: 'fees' | 'donation' | 'info' | 'admin') => void;
 }
 
 export function Header({ currentPage, onNavigate }: HeaderProps) {

@@ -7,8 +7,9 @@ import { DonationPage } from "@/app/donations/page";
 import { InfoGatheringPage } from "@/app/data_collection/page";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
+import AdminPage from "@/app/admin/page";
 
-type PageType = 'fees' | 'donation' | 'info';
+type PageType = 'fees' | 'donation' | 'info' | 'admin';
 
 export default function Home() {
     const [currentPage, setCurrentPage] = useState<PageType>('fees');
@@ -66,24 +67,8 @@ export default function Home() {
     };
 
     const renderCurrentPage = () => {
-        switch (currentPage) {
-            case 'fees':
-                return <ProductCatalog onRegisterNow={handleRegisterNow} />;
-            case 'donation':
-                return <DonationPage onContinue={handleDonationContinue} />;
-            case 'info':
-                return (
-                    <InfoGatheringPage
-                        donationAmount={donationData?.amount}
-                        donationType={donationData?.type}
-                        registrationData={registrationData}
-                        onBack={handleInfoBack}
-                        onSubmit={handleInfoSubmit}
-                    />
-                );
-            default:
-                return <ProductCatalog onRegisterNow={handleRegisterNow} />;
-        }
+        return<AdminPage/>;
+
     };
 
     return (
@@ -95,4 +80,5 @@ export default function Home() {
             <Toaster />
         </div>
     );
+
 }
