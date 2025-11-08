@@ -14,12 +14,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Todo {
-  id        String   @id @default(cuid())
-  title     String
-  completed Boolean  @default(false)
-  createdAt DateTime @default(now())
-}
 
 model Item {
   id           String @id @default(uuid())
@@ -46,7 +40,7 @@ model Purchase {
   id          String @id @default(uuid())
   customerId  String
   itemName    String
-  amount      Decimal
+  amount      Float
   type        PurchaseType
   reason      String
   date        DateTime @default(now())
