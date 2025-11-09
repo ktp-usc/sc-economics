@@ -1,5 +1,6 @@
-import { GraduationCap } from "lucide-react";
+import {GraduationCap, LogIn} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface HeaderProps {
     currentPage: 'fees' | 'donation' | 'info';
@@ -10,7 +11,7 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
     return (
         <header className="border-b bg-white sticky top-0 z-50 shadow-sm">
             <div className="container mx-auto px-4 py-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-6">
                     <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center">
                             <GraduationCap className="w-6 h-6 text-white" />
@@ -37,8 +38,45 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
                         >
                             Make a Donation
                         </Button>
+                        <Link href="/login" className="hidden md:block">
+                            <Button
+                                variant="outline"
+                                className="px-6 flex items-center gap-2"
+                            >
+                                <LogIn className="h-4 w-4" />
+                                Admin Login
+                            </Button>
+                        </Link>
+
+                        {/* Small button with stacked text - shown on small screens */}
+                        <Link href="/login" className="md:hidden">
+                            <Button
+                                variant="outline"
+                                className="px-3 py-2 h-auto flex flex-col items-center gap-0 text-xs leading-tight"
+                            >
+                                <span>Admin</span>
+                                <span>Login</span>
+                            </Button>
+                        </Link>
+                        {/*<Link href="/login">*/}
+                        {/*    <Button*/}
+                        {/*        variant="outline"*/}
+                        {/*        className="px-6 flex items-center gap-2"*/}
+                        {/*    >*/}
+                        {/*        <LogIn className="h-4 w-4" />*/}
+                        {/*        Admin Login*/}
+                        {/*    </Button>*/}
+                        {/*</Link>*/}
                     </div>
                 </div>
+                {/*<div className="absolute top-1.5 right-10">*/}
+                {/*    <Link*/}
+                {/*        href="/login"*/}
+                {/*        className="text-xs text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline"*/}
+                {/*    >*/}
+                {/*        Admin Login*/}
+                {/*    </Link>*/}
+                {/*</div>*/}
             </div>
         </header>
     );
