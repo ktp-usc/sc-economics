@@ -4,6 +4,16 @@ import {DateTime} from "effect/DateTime";
 
 export async function createPurchase(purchase: {
     id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    address: {
+        street: string;
+        city: string;
+        state: string;
+        zipCode: string;
+        country: string;
+    }
     customerId: string;
     itemName: string;
     amount: number;
