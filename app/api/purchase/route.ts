@@ -2,20 +2,20 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-    const items = await prisma.item.findMany({
-        orderBy: { createdAt: 'desc' },
+    const purchases = await prisma.purchase.findMany({
+        orderBy: { date: 'desc' },
     });
-    return NextResponse.json(items);
+    return NextResponse.json(purchases);
 }
 
 export async function POST(req: Request) {
     const data = await req.json();
-    const item = await prisma.item.create({ data });
-    return NextResponse.json(item, { status: 201 });
+    const purchase = await prisma.purchase.create({ data });
+    return NextResponse.json(purchase, { status: 201 });
 }
 
 export async function DELETE(req: Request) {
     const data = await req.json();
-    await prisma.item.delete({ where: { id: data } });
+    await prisma.purchase.delete({ where: { id: data } });
     return NextResponse.json({ success: true });
 }

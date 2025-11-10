@@ -21,7 +21,7 @@ model Item {
   type         PurchaseType
   description  String
   price        Float
-  capacity     Int?
+  status       Status   @default(Active)
   available    Int
   createdAt    DateTime @default(now())
   image        String
@@ -37,7 +37,6 @@ model Purchase {
   email      String
   addressId  String         @unique
   address    Address?       @relation(fields: [addressId], references: [id])
-  customerId String
   itemName   String
   amount     Float
   type       PurchaseType
@@ -68,6 +67,13 @@ enum PurchaseStatus{
   pending
   refunded
 }
+
+enum Status{
+  Active
+  Inactive
+}
+
+
 
 
 

@@ -8,6 +8,8 @@ export async function GET() {
     return NextResponse.json(items);
 }
 
+
+
 export async function POST(req: Request) {
     const data = await req.json();
     const item = await prisma.item.create({ data });
@@ -18,4 +20,11 @@ export async function DELETE(req: Request) {
     const data = await req.json();
     await prisma.item.delete({ where: { id: data } });
     return NextResponse.json({ success: true });
+}
+
+export async function PUT(req: Request) {
+    const data = await req.json();
+    console.log(await data);
+    const item = await prisma.item.update({data, where: { id: data.id }});
+    return NextResponse.json(item, { status: 201 });
 }
