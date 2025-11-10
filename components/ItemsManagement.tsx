@@ -271,7 +271,7 @@ export function ItemsManagement() {
                 {/* Add dialog */}
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                     <DialogTrigger asChild>
-                        <Button onClick={openAddDialog}>
+                        <Button onClick={openAddDialog} className="flex items-center">
                             <Plus className="h-4 w-4 mr-2" />
                             Add New Item
                         </Button>
