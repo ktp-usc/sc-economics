@@ -28,34 +28,32 @@ model Item {
 }
 
 
-model Customer  {
-  id        String @id @default(uuid())
-  firstName String
-  lastName  String
-  email     String
-  address   Address?
-}
+
 
 model Purchase {
-  id          String @id @default(uuid())
-  customerId  String
-  itemName    String
-  amount      Float
-  type        PurchaseType
-  reason      String
-  date        DateTime @default(now())
-  status      PurchaseStatus
+  id         String         @id @default(uuid())
+  firstName  String
+  lastName   String
+  email      String
+  addressId  String         @unique
+  address    Address?       @relation(fields: [addressId], references: [id])
+  customerId String
+  itemName   String
+  amount     Float
+  type       PurchaseType
+  reason     String
+  date       DateTime       @default(now())
+  status     PurchaseStatus
 }
 
 model Address {
-  id          String   @id @default(uuid())
-  customer    Customer @relation(fields: [customerId], references: [id])
-  customerId  String   @unique
-  street      String
-  city        String
-  state       String
-  zipCode     String
-  country     String
+  id       String   @id @default(uuid())
+  street   String
+  city     String
+  state    String
+  zipCode  String
+  country  String
+  purchase Purchase?
 }
 
 enum PurchaseType{

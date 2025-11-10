@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
+import { Badge } from './ui/badge';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Search, Download, Eye } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
+import { Separator } from './ui/separator';
 
-type Customer = {
+type Purchase = {
     id: string;
     firstName: string;
     lastName: string;
@@ -22,11 +22,6 @@ type Customer = {
         zipCode: string;
         country: string;
     };
-};
-
-type Purchase = {
-    id: string;
-    customerId: string;
     itemName: string;
     amount: number;
     type: 'donation' | 'workshop' | 'event' | 'merchandise';
@@ -35,13 +30,9 @@ type Purchase = {
     status: 'completed' | 'pending' | 'refunded';
 };
 
-type PurchaseWithCustomer = Purchase & {
-    customer: Customer;
-};
-
-const mockCustomers: Customer[] = [
+const mockPurchases: Purchase[] = [
     {
-        id: '1',
+        id: 'p1',
         firstName: 'Sarah',
         lastName: 'Johnson',
         email: 'sarah.johnson@email.com',
@@ -51,53 +42,7 @@ const mockCustomers: Customer[] = [
             state: 'CA',
             zipCode: '94105',
             country: 'USA'
-        }
-    },
-    {
-        id: '2',
-        firstName: 'Michael',
-        lastName: 'Chen',
-        email: 'michael.chen@email.com',
-        address: {
-            street: '456 Oak Ave',
-            city: 'New York',
-            state: 'NY',
-            zipCode: '10001',
-            country: 'USA'
-        }
-    },
-    {
-        id: '3',
-        firstName: 'Emily',
-        lastName: 'Rodriguez',
-        email: 'emily.rodriguez@email.com',
-        address: {
-            street: '789 Pine St',
-            city: 'Austin',
-            state: 'TX',
-            zipCode: '73301',
-            country: 'USA'
-        }
-    },
-    {
-        id: '4',
-        firstName: 'David',
-        lastName: 'Kim',
-        email: 'david.kim@email.com',
-        address: {
-            street: '321 Elm Dr',
-            city: 'Seattle',
-            state: 'WA',
-            zipCode: '98101',
-            country: 'USA'
-        }
-    }
-];
-
-const mockPurchases: Purchase[] = [
-    {
-        id: 'p1',
-        customerId: '1',
+        },
         itemName: 'Web Development Workshop',
         amount: 99.99,
         type: 'workshop',
@@ -107,7 +52,16 @@ const mockPurchases: Purchase[] = [
     },
     {
         id: 'p2',
-        customerId: '1',
+        firstName: 'Sarah',
+        lastName: 'Johnson',
+        email: 'sarah.johnson@email.com',
+        address: {
+            street: '123 Main St',
+            city: 'San Francisco',
+            state: 'CA',
+            zipCode: '94105',
+            country: 'USA'
+        },
         itemName: 'General Donation',
         amount: 50.00,
         type: 'donation',
@@ -117,7 +71,16 @@ const mockPurchases: Purchase[] = [
     },
     {
         id: 'p3',
-        customerId: '2',
+        firstName: 'Michael',
+        lastName: 'Chen',
+        email: 'michael.chen@email.com',
+        address: {
+            street: '456 Oak Ave',
+            city: 'New York',
+            state: 'NY',
+            zipCode: '10001',
+            country: 'USA'
+        },
         itemName: 'UX Design Masterclass',
         amount: 149.99,
         type: 'workshop',
@@ -127,7 +90,16 @@ const mockPurchases: Purchase[] = [
     },
     {
         id: 'p4',
-        customerId: '2',
+        firstName: 'Michael',
+        lastName: 'Chen',
+        email: 'michael.chen@email.com',
+        address: {
+            street: '456 Oak Ave',
+            city: 'New York',
+            state: 'NY',
+            zipCode: '10001',
+            country: 'USA'
+        },
         itemName: 'Annual Conference Ticket',
         amount: 299.99,
         type: 'event',
@@ -137,7 +109,16 @@ const mockPurchases: Purchase[] = [
     },
     {
         id: 'p5',
-        customerId: '3',
+        firstName: 'Emily',
+        lastName: 'Rodriguez',
+        email: 'emily.rodriguez@email.com',
+        address: {
+            street: '789 Pine St',
+            city: 'Austin',
+            state: 'TX',
+            zipCode: '73301',
+            country: 'USA'
+        },
         itemName: 'Organization T-Shirt',
         amount: 25.00,
         type: 'merchandise',
@@ -147,7 +128,16 @@ const mockPurchases: Purchase[] = [
     },
     {
         id: 'p6',
-        customerId: '3',
+        firstName: 'Emily',
+        lastName: 'Rodriguez',
+        email: 'emily.rodriguez@email.com',
+        address: {
+            street: '789 Pine St',
+            city: 'Austin',
+            state: 'TX',
+            zipCode: '73301',
+            country: 'USA'
+        },
         itemName: 'Champion Donation',
         amount: 100.00,
         type: 'donation',
@@ -157,7 +147,16 @@ const mockPurchases: Purchase[] = [
     },
     {
         id: 'p7',
-        customerId: '4',
+        firstName: 'David',
+        lastName: 'Kim',
+        email: 'david.kim@email.com',
+        address: {
+            street: '321 Elm Dr',
+            city: 'Seattle',
+            state: 'WA',
+            zipCode: '98101',
+            country: 'USA'
+        },
         itemName: 'Patron Donation',
         amount: 250.00,
         type: 'donation',
@@ -168,31 +167,19 @@ const mockPurchases: Purchase[] = [
 ];
 
 export function CustomerData() {
-    const [customers] = useState<Customer[]>(mockCustomers);
     const [purchases] = useState<Purchase[]>(mockPurchases);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedPurchase, setSelectedPurchase] = useState<PurchaseWithCustomer | null>(null);
+    const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
 
-    // Combine purchases with customer data
-    const purchasesWithCustomers: PurchaseWithCustomer[] = purchases.map(purchase => {
-        const customer = customers.find(c => c.id === purchase.customerId);
-        return {
-            ...purchase,
-            customer: customer!
-        };
-    });
-
-    const filteredPurchases = purchasesWithCustomers.filter(purchase => {
-        const matchesSearch = purchase.customer.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            purchase.customer.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            purchase.customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const filteredPurchases = purchases.filter(purchase => {
+        const matchesSearch = purchase.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            purchase.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            purchase.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
             purchase.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             purchase.reason.toLowerCase().includes(searchTerm.toLowerCase());
 
         return matchesSearch;
     });
-
-
 
     const exportData = () => {
         // In a real app, this would generate a CSV or Excel file
@@ -249,14 +236,14 @@ export function CustomerData() {
                                         <TableCell>
                                             <div>
                                                 <div className="font-medium">
-                                                    {purchase.customer.firstName} {purchase.customer.lastName}
+                                                    {purchase.firstName} {purchase.lastName}
                                                 </div>
                                                 <div className="text-sm text-muted-foreground">
-                                                    {purchase.customer.address.city}, {purchase.customer.address.state}
+                                                    {purchase.address.city}, {purchase.address.state}
                                                 </div>
                                             </div>
                                         </TableCell>
-                                        <TableCell>{purchase.customer.email}</TableCell>
+                                        <TableCell>{purchase.email}</TableCell>
                                         <TableCell>${purchase.amount.toFixed(2)}</TableCell>
                                         <TableCell className="font-medium">{purchase.reason}</TableCell>
                                         <TableCell>{purchase.date}</TableCell>
@@ -306,8 +293,8 @@ export function CustomerData() {
                                                                 <div>
                                                                     <Label className="text-sm font-medium">Customer Information</Label>
                                                                     <div className="mt-1 space-y-1 text-sm">
-                                                                        <div><span className="font-medium">Name:</span> {selectedPurchase.customer.firstName} {selectedPurchase.customer.lastName}</div>
-                                                                        <div><span className="font-medium">Email:</span> {selectedPurchase.customer.email}</div>
+                                                                        <div><span className="font-medium">Name:</span> {selectedPurchase.firstName} {selectedPurchase.lastName}</div>
+                                                                        <div><span className="font-medium">Email:</span> {selectedPurchase.email}</div>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -317,11 +304,11 @@ export function CustomerData() {
                                                             <div>
                                                                 <Label className="text-sm font-medium">Customer Address</Label>
                                                                 <div className="mt-1 space-y-1 text-sm">
-                                                                    <div>{selectedPurchase.customer.address.street}</div>
+                                                                    <div>{selectedPurchase.address.street}</div>
                                                                     <div>
-                                                                        {selectedPurchase.customer.address.city}, {selectedPurchase.customer.address.state} {selectedPurchase.customer.address.zipCode}
+                                                                        {selectedPurchase.address.city}, {selectedPurchase.address.state} {selectedPurchase.address.zipCode}
                                                                     </div>
-                                                                    <div>{selectedPurchase.customer.address.country}</div>
+                                                                    <div>{selectedPurchase.address.country}</div>
                                                                 </div>
                                                             </div>
 
