@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Edit2, Trash2, Upload, X } from 'lucide-react';
 import { createItem, deleteItem, editItem } from '@/lib/item';
-import { Item, PurchaseType, Status } from '@prisma/client';
+import { Item, PurchaseType } from '@prisma/client';
 
 type ListedItem = {
     id: string;
@@ -154,7 +154,7 @@ export function ItemsManagement() {
                     description: updated?.description ?? payload.description,
                     price: typeof updated?.price === 'string' ? parseFloat(updated.price) : (updated?.price ?? payload.price),
                     available: updated?.available ?? payload.available,
-                    status: editingItem.status,
+                    status: updated?.status ?? payload.status,
                     createdAt: editingItem.createdAt,
                     image: updated?.image ?? payload.image
                 };
@@ -180,7 +180,7 @@ export function ItemsManagement() {
                 status: formData.status,
                 price,
                 available,
-                image: formData.image ?? ''
+                image: formData.image || 'https://media.licdn.com/dms/image/C4D0BAQHtbhjNR_mP_A/company-logo_200_200/0/1630567346569/sc_economics_logo?e=2147483647&v=beta&t=tOe_QxJ6BhwZ3-dxGehJ-dC5IXtjRtHqdvVH1y0bgvk'
             };
 
             try {
@@ -193,9 +193,9 @@ export function ItemsManagement() {
                     description: created?.description ?? payload.description ?? '',
                     price: typeof created?.price === 'string' ? parseFloat(created.price) : (created?.price ?? payload.price ?? 0),
                     available: created?.available ?? (payload.available ?? 0),
-                    status: created.status??(payload.status as Status)??'Active',
+                    status: created.status??'Active',
                     createdAt: created?.createdAt ? new Date(created.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-                    image: created?.image ?? payload.image ?? ''
+                    image: created?.image ?? payload.image
                 };
 
                 setItems(prev => [...prev, newItem]);
