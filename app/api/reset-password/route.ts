@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
+import { generateResetToken } from "@/lib/auth";
 import nodemailer from "nodemailer";
 
 export async function POST(request: NextRequest) {
     try {
         const { email } = await request.json();
 
-        // Validate email format
         if (!email || !email.includes("@")) {
             return NextResponse.json(
                 { error: "Invalid email address" },
@@ -13,22 +14,63 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Generate a reset token (in production, use a more secure method)
-        const resetToken = Math.random().toString(36).substring(2, 15) +
-            Math.random().toString(36).substring(2, 15);
+        // Find user by email
+        const { data: user, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', email)
+            .single();
 
-        // Configure Gmail transporter
+        if (userError || !user) {
+            // Don't reveal if email exists or not (security best practice)
+            return NextResponse.json(
+                { message: "If the email exists, a reset link has been sent." },
+                { status: 200 }
+            );
+        }
+
+        // Generate reset token
+        const resetToken = generateResetToken();
+        const expiresAt = new Date();
+        expiresAt.setHours(expiresAt.getHours() + 24); // Token expires in 24 hours
+
+        // Store token in database
+        const { error: tokenError } = await supabase
+            .from('password_reset_tokens')
+            .insert({
+                user_id: user.id,
+                token: resetToken,
+                expires_at: expiresAt.toISOString(),
+                used: false
+            });
+
+        if (tokenError) {
+            console.error("Token creation error:", tokenError);
+            return NextResponse.json(
+                { error: "Failed to create reset token" },
+                { status: 500 }
+            );
+        }
+
+        // Send email
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+            return NextResponse.json(
+                { error: "Email service not configured" },
+                { status: 500 }
+            );
+        }
+
         const transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
-                user: process.env.EMAIL_USER, // Your Gmail address
-                pass: process.env.EMAIL_PASSWORD, // Your Gmail App Password
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD,
             },
         });
 
         const resetLink = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/reset-password/confirm?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
-        const mailOptions = {
+        await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,
             subject: "Password Reset Request - SC Economics Admin",
@@ -43,25 +85,23 @@ export async function POST(request: NextRequest) {
                             Reset Password
                         </a>
                     </div>
-                    <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
+                    <p style="color: #666; font-size: 14px;">Or copy and paste this link:</p>
                     <p style="word-break: break-all; color: #0070f3; font-size: 12px; background-color: #f5f5f5; padding: 10px; border-radius: 4px;">${resetLink}</p>
                     <p style="color: #999; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-                        If you didn't request this password reset, please ignore this email. This link will expire in 24 hours.
+                        This link will expire in 24 hours. If you didn't request this, please ignore this email.
                     </p>
                 </div>
             `,
-        };
-
-        await transporter.sendMail(mailOptions);
+        });
 
         return NextResponse.json(
-            { message: "Password reset email sent successfully" },
+            { message: "If the email exists, a reset link has been sent." },
             { status: 200 }
         );
     } catch (error) {
         console.error("Error sending reset email:", error);
         return NextResponse.json(
-            { error: "Failed to send reset email. Please check your email configuration." },
+            { error: "Failed to send reset email" },
             { status: 500 }
         );
     }

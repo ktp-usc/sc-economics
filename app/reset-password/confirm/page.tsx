@@ -45,22 +45,35 @@ export default function ConfirmResetPasswordPage() {
             return;
         }
 
+        if (!token || !email) {
+            toast.error("Invalid reset link");
+            return;
+        }
+
         setIsLoading(true);
 
         try {
-            // In a real app, you'd verify the token and update the password in a database
-            // For now, we'll just show success
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+            const response = await fetch("/api/reset-password/confirm", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ token, email, newPassword: password }),
+            });
 
-            toast.success("Password reset successfully!");
-            setIsSuccess(true);
+            const data = await response.json();
 
-            // Redirect to login after 2 seconds
-            setTimeout(() => {
-                router.push("/login");
-            }, 2000);
+            if (response.ok) {
+                toast.success("Password reset successfully!");
+                setIsSuccess(true);
+                setTimeout(() => {
+                    router.push("/login");
+                }, 2000);
+            } else {
+                toast.error(data.error || "Failed to reset password");
+            }
         } catch (error) {
-            toast.error("Failed to reset password. Please try again.");
+            toast.error("An error occurred. Please try again.");
         } finally {
             setIsLoading(false);
         }

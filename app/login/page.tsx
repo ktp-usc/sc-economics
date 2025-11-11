@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Lock, User } from "lucide-react";
-import Link from "next/link";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -20,18 +20,33 @@ export default function LoginPage() {
         e.preventDefault();
         setIsLoading(true);
 
-        if (username === "admin" && password === "admin123") {
-            // Store auth token in sessionStorage
-            sessionStorage.setItem("isAuthenticated", "true");
-            sessionStorage.setItem("username", username);
+        try {
+            const response = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ username, password }),
+            });
 
-            toast.success("Login successful!");
-            router.push("/admin");
-        } else {
-            toast.error("Invalid username or password");
+            const data = await response.json();
+
+            if (response.ok) {
+                // Store auth token (you might want to use a JWT token here)
+                sessionStorage.setItem("isAuthenticated", "true");
+                sessionStorage.setItem("username", data.user.username);
+                sessionStorage.setItem("userId", data.user.id);
+
+                toast.success("Login successful!");
+                router.push("/admin");
+            } else {
+                toast.error(data.error || "Login failed");
+            }
+        } catch (error) {
+            toast.error("An error occurred. Please try again.");
+        } finally {
+            setIsLoading(false);
         }
-
-        setIsLoading(false);
     };
 
     return (
