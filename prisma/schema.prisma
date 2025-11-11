@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Item {
+  id           String @id @default(uuid())
+  name         String
+  type         PurchaseType
+  description  String
+  price        Float
+  status       Status   @default(Active)
+  available    Int
+  createdAt    DateTime @default(now())
+  image        String
+}
+
+
+
+
+model Purchase {
+  id         String         @id @default(uuid())
+  firstName  String
+  lastName   String
+  email      String
+  addressId  String         @unique
+  address    Address?       @relation(fields: [addressId], references: [id])
+  itemName   String
+  amount     Float
+  type       PurchaseType
+  reason     String
+  date       DateTime       @default(now())
+  status     PurchaseStatus
+}
+
+model Address {
+  id       String   @id @default(uuid())
+  street   String
+  city     String
+  state    String
+  zipCode  String
+  country  String
+  purchase Purchase?
+}
+
+enum PurchaseType{
+  donation
+  workshop
+  event
+  merchandise
+}
+
+enum PurchaseStatus{
+  completed
+  pending
+  refunded
+}
+
+enum Status{
+  Active
+  Inactive
+}
+
+
+
+
+
+// model Types {
+//   id Int @id @default(autoincrement())
+//   name       String
+//   email      String
+//   isAdmin    Boolean
+//   largeInt   BigInt
+//   decimal    Float
+//   createdAt  DateTime
+//   updatedAt  DateTime
+//   preference Json
+//   blob       Bytes
+//   doner      User
+// }
+
