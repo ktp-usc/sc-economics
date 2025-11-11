@@ -1,208 +1,199 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { useEffect, useRef, useState } from "react";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "./ui/table";
+import { Badge } from "./ui/badge";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "./ui/card";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "./ui/dialog";
+import { Search, Download, Eye } from "lucide-react";
+import { Separator } from "./ui/separator";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Search, Download, Eye } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
-
-type Customer = {
+type customerPurchase = {
     id: string;
     firstName: string;
     lastName: string;
     email: string;
     address: {
+        id?: string;
         street: string;
         city: string;
         state: string;
         zipCode: string;
         country: string;
     };
-};
-
-type Purchase = {
-    id: string;
-    customerId: string;
     itemName: string;
     amount: number;
-    type: 'donation' | 'workshop' | 'event' | 'merchandise';
+    type: "donation" | "workshop" | "event" | "merchandise";
     reason: string;
-    date: string;
-    status: 'completed' | 'pending' | 'refunded';
+    date: string; // ISO or formatted date
+    status: "completed" | "pending" | "refunded";
 };
-
-type PurchaseWithCustomer = Purchase & {
-    customer: Customer;
-};
-
-const mockCustomers: Customer[] = [
-    {
-        id: '1',
-        firstName: 'Sarah',
-        lastName: 'Johnson',
-        email: 'sarah.johnson@email.com',
-        address: {
-            street: '123 Main St',
-            city: 'San Francisco',
-            state: 'CA',
-            zipCode: '94105',
-            country: 'USA'
-        }
-    },
-    {
-        id: '2',
-        firstName: 'Michael',
-        lastName: 'Chen',
-        email: 'michael.chen@email.com',
-        address: {
-            street: '456 Oak Ave',
-            city: 'New York',
-            state: 'NY',
-            zipCode: '10001',
-            country: 'USA'
-        }
-    },
-    {
-        id: '3',
-        firstName: 'Emily',
-        lastName: 'Rodriguez',
-        email: 'emily.rodriguez@email.com',
-        address: {
-            street: '789 Pine St',
-            city: 'Austin',
-            state: 'TX',
-            zipCode: '73301',
-            country: 'USA'
-        }
-    },
-    {
-        id: '4',
-        firstName: 'David',
-        lastName: 'Kim',
-        email: 'david.kim@email.com',
-        address: {
-            street: '321 Elm Dr',
-            city: 'Seattle',
-            state: 'WA',
-            zipCode: '98101',
-            country: 'USA'
-        }
-    }
-];
-
-const mockPurchases: Purchase[] = [
-    {
-        id: 'p1',
-        customerId: '1',
-        itemName: 'Web Development Workshop',
-        amount: 99.99,
-        type: 'workshop',
-        reason: 'Web Development Workshop',
-        date: '2024-01-15',
-        status: 'completed'
-    },
-    {
-        id: 'p2',
-        customerId: '1',
-        itemName: 'General Donation',
-        amount: 50.00,
-        type: 'donation',
-        reason: 'General Donation',
-        date: '2024-02-01',
-        status: 'completed'
-    },
-    {
-        id: 'p3',
-        customerId: '2',
-        itemName: 'UX Design Masterclass',
-        amount: 149.99,
-        type: 'workshop',
-        reason: 'UX Design Masterclass',
-        date: '2024-01-20',
-        status: 'completed'
-    },
-    {
-        id: 'p4',
-        customerId: '2',
-        itemName: 'Annual Conference Ticket',
-        amount: 299.99,
-        type: 'event',
-        reason: 'Annual Conference Ticket',
-        date: '2024-02-05',
-        status: 'completed'
-    },
-    {
-        id: 'p5',
-        customerId: '3',
-        itemName: 'Organization T-Shirt',
-        amount: 25.00,
-        type: 'merchandise',
-        reason: 'Organization T-Shirt',
-        date: '2024-01-25',
-        status: 'completed'
-    },
-    {
-        id: 'p6',
-        customerId: '3',
-        itemName: 'Champion Donation',
-        amount: 100.00,
-        type: 'donation',
-        reason: 'Champion Donation',
-        date: '2024-02-10',
-        status: 'completed'
-    },
-    {
-        id: 'p7',
-        customerId: '4',
-        itemName: 'Patron Donation',
-        amount: 250.00,
-        type: 'donation',
-        reason: 'Patron Donation',
-        date: '2024-02-15',
-        status: 'completed'
-    }
-];
 
 export function CustomerData() {
-    const [customers] = useState<Customer[]>(mockCustomers);
-    const [purchases] = useState<Purchase[]>(mockPurchases);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedPurchase, setSelectedPurchase] = useState<PurchaseWithCustomer | null>(null);
+    const [purchases, setPurchases] = useState<customerPurchase[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedPurchase, setSelectedPurchase] = useState<
+        customerPurchase | null
+    >(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    // Combine purchases with customer data
-    const purchasesWithCustomers: PurchaseWithCustomer[] = purchases.map(purchase => {
-        const customer = customers.find(c => c.id === purchase.customerId);
-        return {
-            ...purchase,
-            customer: customer!
+    useEffect(() => {
+        const controller = new AbortController();
+        let mounted = true;
+
+        async function fetchItems() {
+            try {
+                const res = await fetch("/api/purchase", { signal: controller.signal });
+                if (!res.ok)
+                    throw new Error(`Failed to fetch purchases: ${res.status}`);
+                const data = await res.json();
+
+                const mapped: customerPurchase[] = (data || []).map((it: any) => ({
+                    id: String(it.id),
+                    firstName: String(it.firstName ?? ""),
+                    lastName: String(it.lastName ?? ""),
+
+                    // email
+                    email: String(it.email ?? ""),
+
+                    // address: ensure the nested address exists; provide safe defaults
+                    address: {
+                        id: it.address?.id ?? undefined,
+                        street: String(it.address?.street ?? ""),
+                        city: String(it.address?.city ?? ""),
+                        state: String(it.address?.state ?? ""),
+                        zipCode: String(it.address?.zipCode ?? ""),
+                        country: String(it.address?.country ?? ""),
+                    },
+
+                    itemName: String(it.itemName ?? ""),
+                    amount:
+                        typeof it.amount === "string" ? parseFloat(it.amount) : Number(it.amount ?? 0),
+                    type: (it.type ?? "donation") as customerPurchase["type"],
+                    reason: String(it.reason ?? ""),
+                    date: it.date ? new Date(it.date).toLocaleDateString() : "",
+                    status: (it.status ?? "pending") as customerPurchase["status"],
+                }));
+
+                if (mounted) setPurchases(mapped);
+            } catch (err: any) {
+                if (err.name === "AbortError") return;
+                // eslint-disable-next-line no-console
+                console.error("Error fetching purchases", err);
+            }
+        }
+
+        fetchItems();
+        return () => {
+            mounted = false;
+            controller.abort();
         };
+    }, []);
+
+    const filteredPurchases = purchases.filter((purchase) => {
+        const q = searchTerm.trim().toLowerCase();
+        if (!q) return true;
+        return (
+            purchase.firstName.toLowerCase().includes(q) ||
+            purchase.lastName.toLowerCase().includes(q) ||
+            purchase.email.toLowerCase().includes(q) ||
+            purchase.itemName.toLowerCase().includes(q) ||
+            purchase.reason.toLowerCase().includes(q)
+        );
     });
-
-    const filteredPurchases = purchasesWithCustomers.filter(purchase => {
-        const matchesSearch = purchase.customer.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            purchase.customer.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            purchase.customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            purchase.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            purchase.reason.toLowerCase().includes(searchTerm.toLowerCase());
-
-        return matchesSearch;
-    });
-
-
 
     const exportData = () => {
-        // In a real app, this would generate a CSV or Excel file
-        console.log('Exporting purchase data...', filteredPurchases);
-        alert('Export functionality would be implemented here');
+        // quick CSV export: header + rows
+        const header = [
+            "id",
+            "firstName",
+            "lastName",
+            "email",
+            "street",
+            "city",
+            "state",
+            "zipCode",
+            "country",
+            "itemName",
+            "amount",
+            "type",
+            "reason",
+            "date",
+            "status",
+        ];
+        const rows = filteredPurchases.map((p) =>
+            [
+                p.id,
+                p.firstName,
+                p.lastName,
+                p.email,
+                p.address.street,
+                p.address.city,
+                p.address.state,
+                p.address.zipCode,
+                p.address.country,
+                p.itemName,
+                p.amount.toFixed(2),
+                p.type,
+                p.reason,
+                p.date,
+                p.status,
+            ]
+                .map((v) =>
+                    typeof v === "string" && (v.includes(",") || v.includes('"'))
+                        ? `"${String(v).replace(/"/g, '""')}"`
+                        : String(v)
+                )
+                .join(",")
+        );
+        const csv = [header.join(","), ...rows].join("\n");
+
+        // create a download link
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `purchases_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
     };
+
+    function openDialogWithPurchase(p: customerPurchase) {
+        setSelectedPurchase(p);
+        setIsDialogOpen(true);
+    }
+
+    function closeDialog() {
+        setIsDialogOpen(false);
+        // small delay to avoid instant content unmount race (optional)
+        setTimeout(() => setSelectedPurchase(null), 150);
+    }
 
     return (
         <div className="space-y-6">
-            {/* Filters and Search */}
             <Card>
                 <CardHeader>
                     <CardTitle>Individual Purchase Records</CardTitle>
@@ -210,6 +201,7 @@ export function CustomerData() {
                         View detailed information about each individual purchase and customer
                     </CardDescription>
                 </CardHeader>
+
                 <CardContent>
                     <div className="flex flex-col sm:flex-row gap-4 mb-6">
                         <div className="flex-1">
@@ -243,60 +235,84 @@ export function CustomerData() {
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
+
                             <TableBody>
                                 {filteredPurchases.map((purchase) => (
                                     <TableRow key={purchase.id}>
                                         <TableCell>
                                             <div>
                                                 <div className="font-medium">
-                                                    {purchase.customer.firstName} {purchase.customer.lastName}
+                                                    {purchase.firstName} {purchase.lastName}
                                                 </div>
                                                 <div className="text-sm text-muted-foreground">
-                                                    {purchase.customer.address.city}, {purchase.customer.address.state}
+                                                    {purchase.address.city}, {purchase.address.state}
                                                 </div>
                                             </div>
                                         </TableCell>
-                                        <TableCell>{purchase.customer.email}</TableCell>
+
+                                        <TableCell>{purchase.email}</TableCell>
+
                                         <TableCell>${purchase.amount.toFixed(2)}</TableCell>
+
                                         <TableCell className="font-medium">{purchase.reason}</TableCell>
+
                                         <TableCell>{purchase.date}</TableCell>
+
                                         <TableCell>
-                                            <Badge variant={purchase.status === 'completed' ? 'default' : 'secondary'}>
+                                            <Badge
+                                                variant={purchase.status === "completed" ? "default" : "secondary"}
+                                            >
                                                 {purchase.status}
                                             </Badge>
                                         </TableCell>
+
                                         <TableCell className="text-right">
-                                            <Dialog>
+                                            {/* we open our dialog manually so selectedPurchase is set synchronously */}
+                                            <Dialog open={isDialogOpen} onOpenChange={(open) => !open && closeDialog()}>
                                                 <DialogTrigger asChild>
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => setSelectedPurchase(purchase)}
+                                                        onClick={() => openDialogWithPurchase(purchase)}
                                                     >
                                                         <Eye className="h-4 w-4" />
                                                     </Button>
                                                 </DialogTrigger>
+
                                                 <DialogContent className="sm:max-w-[600px]">
                                                     <DialogHeader>
-                                                        <DialogTitle>
-                                                            Purchase Details
-                                                        </DialogTitle>
+                                                        <DialogTitle>Purchase Details</DialogTitle>
                                                         <DialogDescription>
                                                             Complete information about this purchase and customer
                                                         </DialogDescription>
                                                     </DialogHeader>
 
-                                                    {selectedPurchase && (
+                                                    {selectedPurchase ? (
                                                         <div className="space-y-6">
-                                                            {/* Purchase Info */}
                                                             <div className="grid grid-cols-2 gap-4">
                                                                 <div>
-                                                                    <Label className="text-sm font-medium">Purchase Information</Label>
+                                                                    <Label className="text-sm font-medium">
+                                                                        Purchase Information
+                                                                    </Label>
                                                                     <div className="mt-1 space-y-1 text-sm">
-                                                                        <div><span className="font-medium">Amount:</span> ${selectedPurchase.amount.toFixed(2)}</div>
-                                                                        <div><span className="font-medium">Date:</span> {selectedPurchase.date}</div>
-                                                                        <div><span className="font-medium">Status:</span>
-                                                                            <Badge variant={selectedPurchase.status === 'completed' ? 'default' : 'secondary'} className="ml-2">
+                                                                        <div>
+                                                                            <span className="font-medium">Amount:</span>{" "}
+                                                                            ${selectedPurchase.amount.toFixed(2)}
+                                                                        </div>
+                                                                        <div>
+                                                                            <span className="font-medium">Date:</span>{" "}
+                                                                            {selectedPurchase.date}
+                                                                        </div>
+                                                                        <div>
+                                                                            <span className="font-medium">Status:</span>
+                                                                            <Badge
+                                                                                variant={
+                                                                                    selectedPurchase.status === "completed"
+                                                                                        ? "default"
+                                                                                        : "secondary"
+                                                                                }
+                                                                                className="ml-2"
+                                                                            >
                                                                                 {selectedPurchase.status}
                                                                             </Badge>
                                                                         </div>
@@ -304,10 +320,18 @@ export function CustomerData() {
                                                                 </div>
 
                                                                 <div>
-                                                                    <Label className="text-sm font-medium">Customer Information</Label>
+                                                                    <Label className="text-sm font-medium">
+                                                                        Customer Information
+                                                                    </Label>
                                                                     <div className="mt-1 space-y-1 text-sm">
-                                                                        <div><span className="font-medium">Name:</span> {selectedPurchase.customer.firstName} {selectedPurchase.customer.lastName}</div>
-                                                                        <div><span className="font-medium">Email:</span> {selectedPurchase.customer.email}</div>
+                                                                        <div>
+                                                                            <span className="font-medium">Name:</span>{" "}
+                                                                            {selectedPurchase.firstName} {selectedPurchase.lastName}
+                                                                        </div>
+                                                                        <div>
+                                                                            <span className="font-medium">Email:</span>{" "}
+                                                                            {selectedPurchase.email}
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -317,11 +341,12 @@ export function CustomerData() {
                                                             <div>
                                                                 <Label className="text-sm font-medium">Customer Address</Label>
                                                                 <div className="mt-1 space-y-1 text-sm">
-                                                                    <div>{selectedPurchase.customer.address.street}</div>
+                                                                    <div>{selectedPurchase.address.street}</div>
                                                                     <div>
-                                                                        {selectedPurchase.customer.address.city}, {selectedPurchase.customer.address.state} {selectedPurchase.customer.address.zipCode}
+                                                                        {selectedPurchase.address.city}, {selectedPurchase.address.state}{" "}
+                                                                        {selectedPurchase.address.zipCode}
                                                                     </div>
-                                                                    <div>{selectedPurchase.customer.address.country}</div>
+                                                                    <div>{selectedPurchase.address.country}</div>
                                                                 </div>
                                                             </div>
 
@@ -330,10 +355,12 @@ export function CustomerData() {
                                                             <div>
                                                                 <Label className="text-sm font-medium">Item Purchased</Label>
                                                                 <div className="mt-1 text-sm p-3 bg-muted rounded-md">
-                                                                    {selectedPurchase.reason}
+                                                                    {selectedPurchase.itemName} — {selectedPurchase.reason}
                                                                 </div>
                                                             </div>
                                                         </div>
+                                                    ) : (
+                                                        <div>Loading…</div>
                                                     )}
                                                 </DialogContent>
                                             </Dialog>

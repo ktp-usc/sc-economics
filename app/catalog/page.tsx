@@ -45,7 +45,7 @@ export function ProductCatalog({ onRegisterNow }: ProductCatalogProps) {
             setLoading(true);
             setError(null);
             try {
-                const res = await fetch("/api/item");
+                const res = await fetch("/api/item/active");
                 if (!res.ok) throw new Error(`Fetch failed (${res.status})`);
                 const data = await res.json();
 
