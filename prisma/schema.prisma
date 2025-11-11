@@ -1,11 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
@@ -14,39 +8,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model Item {
-  id           String @id @default(uuid())
-  name         String
-  type         PurchaseType
-  description  String
-  price        Float
-  status       Status   @default(Active)
-  available    Int
-  createdAt    DateTime @default(now())
-  image        String
+  id          String       @id @default(uuid())
+  name        String
+  type        PurchaseType
+  description String
+  price       Float
+  available   Int
+  createdAt   DateTime     @default(now())
+  image       String       @default("https://media.licdn.com/dms/image/C4D0BAQHtbhjNR_mP_A/company-logo_200_200/0/1630567346569/sc_economics_logo?e=2147483647&v=beta&t=tOe_QxJ6BhwZ3-dxGehJ-dC5IXtjRtHqdvVH1y0bgvk")
+  status      Status       @default(Active)
 }
 
-
-
-
 model Purchase {
-  id         String         @id @default(uuid())
-  firstName  String
-  lastName   String
-  email      String
-  addressId  String         @unique
-  address    Address?       @relation(fields: [addressId], references: [id])
-  itemName   String
-  amount     Float
-  type       PurchaseType
-  reason     String
-  date       DateTime       @default(now())
-  status     PurchaseStatus
+  id        String         @id @default(uuid())
+  itemName  String
+  amount    Float
+  type      PurchaseType
+  reason    String
+  date      DateTime       @default(now())
+  status    PurchaseStatus
+  addressId String         @unique
+  email     String
+  firstName String
+  lastName  String
+  address   Address        @relation(fields: [addressId], references: [id])
 }
 
 model Address {
-  id       String   @id @default(uuid())
+  id       String    @id @default(uuid())
   street   String
   city     String
   state    String
@@ -55,39 +45,26 @@ model Address {
   purchase Purchase?
 }
 
-enum PurchaseType{
+model admin {
+  id       String @id @default(uuid())
+  username String
+  password String
+}
+
+enum PurchaseType {
   donation
   workshop
   event
   merchandise
 }
 
-enum PurchaseStatus{
+enum PurchaseStatus {
   completed
   pending
   refunded
 }
 
-enum Status{
+enum Status {
   Active
   Inactive
 }
-
-
-
-
-
-// model Types {
-//   id Int @id @default(autoincrement())
-//   name       String
-//   email      String
-//   isAdmin    Boolean
-//   largeInt   BigInt
-//   decimal    Float
-//   createdAt  DateTime
-//   updatedAt  DateTime
-//   preference Json
-//   blob       Bytes
-//   doner      User
-// }
-
