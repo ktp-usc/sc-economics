@@ -13,13 +13,51 @@ export function DonationPage({ onContinue }: DonationPageProps) {
     const [donationType, setDonationType] = useState('one-time');
     const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
     const [customAmount, setCustomAmount] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    
 
     const presetAmounts = [25, 50, 100, 250];
 
-    const handleContinue = () => {
-        const amount = selectedAmount || parseFloat(customAmount) || 0;
-        if (amount > 0) {
-            onContinue(amount, donationType);
+    const handleContinue = async () => {
+        const amount = selectedAmount ?? parseFloat(customAmount || '0');
+        if (!(amount > 0)) return;
+
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await fetch('/api/checkout_sessions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount, currency: 'usd', description: 'Donation' })
+            });
+
+            // Defensive handling in case the server returns non-JSON (HTML error page etc.)
+            const contentType = res.headers.get('content-type') || '';
+            let data: any = null;
+            if (contentType.includes('application/json')) {
+                data = await res.json();
+            } else {
+                const text = await res.text();
+                throw new Error(`Unexpected server response (status ${res.status}): ${text}`);
+            }
+
+            if (!res.ok) throw new Error(data?.error || 'Failed to create checkout session');
+
+            // Optional callback for parent tracking
+            try { if (onContinue) onContinue(amount, donationType); } catch (e) { console.warn(e); }
+
+            // Redirect browser to Stripe Checkout page
+            if (data?.url) {
+                window.location.href = data.url;
+            } else {
+                throw new Error('Missing checkout URL from server');
+            }
+        } catch (err: any) {
+            console.error(err);
+            setError(err?.message || 'Unknown error');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -123,13 +161,16 @@ export function DonationPage({ onContinue }: DonationPageProps) {
                         </div>
 
                         {/* Continue Button */}
-                        <Button
-                            onClick={handleContinue}
-                            disabled={!isAmountSelected}
-                            className="w-full h-12"
-                        >
-                            Continue to Details
-                        </Button>
+                        <div>
+                            {error && <p className="text-sm text-destructive mb-2">{error}</p>}
+                            <Button
+                                onClick={handleContinue}
+                                disabled={!isAmountSelected || loading}
+                                className="w-full h-12"
+                            >
+                                {loading ? 'Redirecting…' : 'Continue to Details'}
+                            </Button>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
