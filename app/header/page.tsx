@@ -1,6 +1,8 @@
-import {GraduationCap, LogIn} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
+import {LogIn} from "lucide-react";
+import logo from "../../public/SCEcon.png";
 
 interface HeaderProps {
     currentPage: 'fees' | 'donation' | 'info';
@@ -10,15 +12,23 @@ interface HeaderProps {
 export function Header({ currentPage, onNavigate }: HeaderProps) {
     return (
         <header className="border-b bg-white sticky top-0 z-50 shadow-sm">
-            <div className="container mx-auto px-4 py-4">
-                <div className="flex items-center justify-between gap-6">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center">
-                            <GraduationCap className="w-6 h-6 text-white" />
+            <div className="container mx-auto px-4 py-2">
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex flex-col items-left space-x-3 -ml-3">
+                        <div className="-mx-60">
+                                <Image
+                                    src={logo}   // adjust to your filename
+                                    alt="SC Economics"
+                                    width={200}           // choose a width that fits
+                                    // height={400}            // keep aspect ratio consistent
+                                    // className="h-40 w-auto object-contain my-0"
+                                    priority
+                                />
                         </div>
+
                         <div>
-                            <h1 className="text-xl font-medium text-primary">SC ECONOMICS</h1>
-                            <p className="text-sm text-muted-foreground">Empowering teachers to integrate economics education</p>
+                            {/*<h1 className="text-xl font-medium text-primary">SC ECONOMICS</h1>*/}
+                            <p className="text-sm text-muted-foreground static w-60 ml-3">Empowering teachers to integrate economics education</p>
                         </div>
                     </div>
 
