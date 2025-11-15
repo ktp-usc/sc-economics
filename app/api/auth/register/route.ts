@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
 
         // Check if user already exists
         const existingUsers = await sql`
-            SELECT * FROM users 
+            SELECT * FROM users
             WHERE username = ${username} OR email = ${email}
             LIMIT 1
         `;

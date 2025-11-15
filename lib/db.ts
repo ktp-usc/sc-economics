@@ -1,25 +1,10 @@
 import { neon } from '@neondatabase/serverless';
 
-if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL environment variable is not set');
+const connectionString =
+    process.env.NEW_DATABASE_URL ?? process.env.DATABASE_URL;
+
+if (!connectionString) {
+    throw new Error('Missing database connection string');
 }
 
-export const sql = neon(process.env.DATABASE_URL);
-
-export interface User {
-    id: string;
-    username: string;
-    email: string;
-    password_hash: string;
-    created_at: string;
-    updated_at: string;
-}
-
-export interface PasswordResetToken {
-    id: string;
-    user_id: string;
-    token: string;
-    expires_at: string;
-    used: boolean;
-    created_at: string;
-}
+export const sql = neon(connectionString);
