@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
@@ -14,39 +14,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model Item {
-  id           String @id @default(uuid())
-  name         String
-  type         PurchaseType
-  description  String
-  price        Float
-  status       Status   @default(Active)
-  available    Int
-  createdAt    DateTime @default(now())
-  image        String
+  id          String       @id @default(uuid())
+  name        String
+  type        PurchaseType
+  description String
+  price       Float
+  status      Status       @default(Active)
+  available   Int
+  createdAt   DateTime     @default(now())
+  image       String
 }
 
-
-
-
 model Purchase {
-  id         String         @id @default(uuid())
-  firstName  String
-  lastName   String
-  email      String
-  addressId  String         @unique
-  address    Address?       @relation(fields: [addressId], references: [id])
-  itemName   String
-  amount     Float
-  type       PurchaseType
-  reason     String
-  date       DateTime       @default(now())
-  status     PurchaseStatus
+  id        String         @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String
+  addressId String         @unique
+  address   Address?       @relation(fields: [addressId], references: [id])
+  itemName  String
+  amount    Float
+  type      PurchaseType
+  reason    String
+  date      DateTime       @default(now())
+  status    PurchaseStatus
 }
 
 model Address {
-  id       String   @id @default(uuid())
+  id       String    @id @default(uuid())
   street   String
   city     String
   state    String
@@ -55,27 +51,32 @@ model Address {
   purchase Purchase?
 }
 
-enum PurchaseType{
+model DonationOption {
+  id        String   @id @default(uuid())
+  name      String
+  amount    Float
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum PurchaseType {
   donation
   workshop
   event
   merchandise
 }
 
-enum PurchaseStatus{
+enum PurchaseStatus {
   completed
   pending
   refunded
 }
 
-enum Status{
+enum Status {
   Active
   Inactive
 }
-
-
-
-
 
 // model Types {
 //   id Int @id @default(autoincrement())
@@ -90,4 +91,3 @@ enum Status{
 //   blob       Bytes
 //   doner      User
 // }
-
