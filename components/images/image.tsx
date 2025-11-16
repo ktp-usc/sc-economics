@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState } from 'react'
 import error_img from "@/public/error_img.svg"
 

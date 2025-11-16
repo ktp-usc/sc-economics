@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ProductCard } from "@/app/card/page";
-import { Button } from "@/components/ui/button";
+import {useEffect, useState} from "react";
+import {ProductCard} from "@/app/card/page";
+import {Button} from "@/components/ui/button";
 import {
     Select,
     SelectContent,
@@ -10,8 +10,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Search, Filter } from "lucide-react";
+import {Input} from "@/components/ui/input";
+import {Search, Filter} from "lucide-react";
 
 interface Product {
     id: string;
@@ -27,7 +27,7 @@ interface ProductCatalogProps {
     onRegisterNow?: (productId: string) => void;
 }
 
-export function ProductCatalog({ onRegisterNow }: ProductCatalogProps) {
+export function ProductCatalog({onRegisterNow}: ProductCatalogProps) {
     // component state (hooks MUST be inside component)
     const [productList, setProductList] = useState<Product[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -49,20 +49,28 @@ export function ProductCatalog({ onRegisterNow }: ProductCatalogProps) {
                 if (!res.ok) throw new Error(`Fetch failed (${res.status})`);
                 const data = await res.json();
 
-                const mapped: Product[] = (data || []).map((it: any) => ({
+                const mapped: Product[] = (data || []).map((it: Product) => ({
                     id: String(it.id),
                     name: String(it.name ?? "Untitled"),
                     price: Number(it.price ?? 0),
                     description: String(it.description ?? ""),
                     image: String(it.image ?? ""),
-                    category: it.type ? String(it.type) : "Uncategorized",
-                    inStock: Number(it.available ?? 0) > 0,
+                    category: it.category ? String(it.category) : "Uncategorized",
+                    inStock: Number(it.inStock ?? 0) > 0,
                 }));
 
                 if (mounted) setProductList(mapped);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error("Error fetching items", err);
-                if (mounted) setError(err?.message ?? "Unknown error");
+                if (mounted) {
+                    if (err instanceof Error) {
+                        setError(err.message);
+                    } else if (typeof err === "string") {
+                        setError(err);
+                    } else {
+                        setError("Unknown error");
+                    }
+                }
             } finally {
                 if (mounted) setLoading(false);
             }
@@ -77,7 +85,11 @@ export function ProductCatalog({ onRegisterNow }: ProductCatalogProps) {
     // derive categories from the fetched product list
     const categories = [
         "all",
-        ...Array.from(new Set(productList.map((p) => p.category).filter(Boolean))),
+        ...Array.from(new Set(
+            productList
+                .map((p) => p.category)
+                .filter((c): c is string => Boolean(c))  // added line to remove undefined elements
+        )),
     ];
 
     const filteredProducts = productList
@@ -106,7 +118,8 @@ export function ProductCatalog({ onRegisterNow }: ProductCatalogProps) {
     return (
         <div className="container mx-auto px-4 py-8">
             {/* Hero Section */}
-            <div className="text-center mb-12 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 rounded-xl p-8">
+            <div
+                className="text-center mb-12 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 rounded-xl p-8">
                 <h2 className="text-3xl mb-4 text-primary">Professional Development Opportunities</h2>
                 <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
                     Transform your teaching with our expert-led workshops and events designed specifically
@@ -117,7 +130,8 @@ export function ProductCatalog({ onRegisterNow }: ProductCatalogProps) {
             {/* Filters */}
             <div className="mb-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
                 <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Search
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4"/>
                     <Input
                         placeholder="Search workshops and events..."
                         value={searchTerm}
@@ -128,10 +142,10 @@ export function ProductCatalog({ onRegisterNow }: ProductCatalogProps) {
 
                 <div className="flex gap-4 items-center">
                     <div className="flex items-center gap-2">
-                        <Filter className="w-4 h-4 text-muted-foreground" />
+                        <Filter className="w-4 h-4 text-muted-foreground"/>
                         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                             <SelectTrigger className="w-40">
-                                <SelectValue placeholder="Category" />
+                                <SelectValue placeholder="Category"/>
                             </SelectTrigger>
                             <SelectContent>
                                 {categories.map((category) => (
@@ -145,7 +159,7 @@ export function ProductCatalog({ onRegisterNow }: ProductCatalogProps) {
 
                     <Select value={sortBy} onValueChange={setSortBy}>
                         <SelectTrigger className="w-40">
-                            <SelectValue placeholder="Sort by" />
+                            <SelectValue placeholder="Sort by"/>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="name">Name</SelectItem>
@@ -166,7 +180,8 @@ export function ProductCatalog({ onRegisterNow }: ProductCatalogProps) {
                 </div>
             ) : filteredProducts.length === 0 ? (
                 <div className="text-center py-12">
-                    <p className="text-muted-foreground text-lg">No workshops or events found matching your criteria.</p>
+                    <p className="text-muted-foreground text-lg">No workshops or events found matching your
+                        criteria.</p>
                     <Button
                         variant="outline"
                         onClick={() => {
@@ -182,7 +197,7 @@ export function ProductCatalog({ onRegisterNow }: ProductCatalogProps) {
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {filteredProducts.map((product) => (
-                        <ProductCard key={product.id} product={product} onRegisterNow={onRegisterNow} />
+                        <ProductCard key={product.id} product={product} onRegisterNow={onRegisterNow}/>
                     ))}
                 </div>
             )}
@@ -191,8 +206,10 @@ export function ProductCatalog({ onRegisterNow }: ProductCatalogProps) {
             <div className="mt-16 bg-gradient-to-r from-primary to-secondary rounded-lg p-8 text-center text-white">
                 <h3 className="text-xl mb-4">Transforming Education Together</h3>
                 <p className="text-white/90 max-w-2xl mx-auto">
-                    Join thousands of educators who have enhanced their teaching through our professional development programs.
-                    Our workshops and events provide practical tools, research-based strategies, and ongoing support to help you
+                    Join thousands of educators who have enhanced their teaching through our professional development
+                    programs.
+                    Our workshops and events provide practical tools, research-based strategies, and ongoing support to
+                    help you
                     successfully integrate economics education into your classroom.
                 </p>
             </div>

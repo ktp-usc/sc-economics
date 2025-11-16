@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Header } from "@/app/header/page";
 import { ProductCatalog } from "@/app/catalog/page";
 import { DonationPage } from "@/app/donations/page";
@@ -41,7 +41,7 @@ export default function Home() {
         }
     };
 
-    const handleInfoSubmit = (formData: any) => {
+    const handleInfoSubmit = (formData: FormData) => {
         if (registrationData) {
             toast.success("Processing workshop registration...");
             console.log("Workshop registration:", {

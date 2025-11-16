@@ -1,9 +1,3 @@
-import React, { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import {Item} from "@prisma/client";
-
-
-
 export async function createItem(item: {
     name: string;
     type: string;
@@ -15,8 +9,8 @@ export async function createItem(item: {
 }) {
     const res = await fetch("/api/item", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify( item ),
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(item),
     });
 
     const data = await res.json();
@@ -26,9 +20,9 @@ export async function createItem(item: {
 
 export async function deleteItem(id: string) {
     const res = await fetch(`/api/item`, {
-        method: 'DELETE' ,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify( id ),
+        method: 'DELETE',
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(id),
     });
     if (!res.ok) throw new Error('Failed to delete item');
     return res.json();
@@ -46,8 +40,8 @@ export async function editItem(item: {
 }) {
     const res = await fetch("/api/item", {
         method: "Put",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify( item ),
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(item),
     });
 
     const data = await res.json();
