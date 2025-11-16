@@ -311,7 +311,7 @@ export function ItemsManagement() {
                                 <div className="space-y-3">
                                     {formData.image ? (
                                         <div className="relative inline-block">
-                                            <Image src={formData.image} alt="Preview" className="w-32 h-32 rounded-md object-cover border" />
+                                            <Image src={formData.image} alt="Preview" width={128} height={128} className="w-32 h-32 rounded-md object-cover border" />
                                             <Button type="button" variant="destructive" size="sm" className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0" onClick={removeImage}>
                                                 <X className="h-3 w-3" />
                                             </Button>
@@ -389,7 +389,7 @@ export function ItemsManagement() {
                                 <TableCell>
                                     <div className="flex items-center gap-3">
                                         {item.image ? (
-                                            <Image src={item.image} alt={item.name} className="w-12 h-12 rounded-md object-cover flex-shrink-0" />
+                                            <Image src={item.image} alt={item.name} width={128} height={128} className="w-12 h-12 rounded-md object-cover flex-shrink-0" />
                                         ) : (
                                             <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center flex-shrink-0">
                                                 <Upload className="h-5 w-5 text-muted-foreground" />
@@ -484,7 +484,7 @@ export function ItemsManagement() {
                             <div className="space-y-3">
                                 {formData.image ? (
                                     <div className="relative inline-block">
-                                        <Image src={formData.image} alt="Preview" className="w-32 h-32 rounded-md object-cover border" />
+                                        <Image src={formData.image} alt="Preview" width={128} height={128} className="w-32 h-32 rounded-md object-cover border" />
                                         <Button type="button" variant="destructive" size="sm" className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0" onClick={removeImage}>
                                             <X className="h-3 w-3" />
                                         </Button>

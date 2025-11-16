@@ -1,7 +1,6 @@
 "use client";
 
 import {useEffect, useState} from "react";
-import {ProductCard} from "@/app/card/page";
 import {Button} from "@/components/ui/button";
 import {
     Select,
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import {Input} from "@/components/ui/input";
 import {Search, Filter} from "lucide-react";
+import {ProductCard} from "@/components/ProductCard";
 
 interface Product {
     id: string;
