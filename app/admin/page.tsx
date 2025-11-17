@@ -8,7 +8,7 @@ import { DonationSettings } from '@/components/DonationSettings';
 import { CustomerData } from '@/components/CustomerData';
 import { Package, DollarSign, Users} from 'lucide-react';
 
-export default function App() {
+export default function AdminPage() {
     return (
         <div className="min-h-screen bg-background p-6">
             <div className="max-w-7xl mx-auto">
