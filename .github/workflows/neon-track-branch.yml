@@ -1,4 +1,4 @@
-name: Create/Delete Branch for Git Branch
+name: Create/Delete Neon Branch for Git Branch
 
 on:
   create:
@@ -7,6 +7,12 @@ on:
   delete:
     branches:
       - '**'
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: "Run Neon branch creation for an existing branch"
+        required: true
+        type: string
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -14,9 +20,9 @@ concurrency:
 jobs:
   setup:
     name: Setup
+    runs-on: ubuntu-latest
     outputs:
       branch: ${{ steps.branch_name.outputs.current_branch }}
-    runs-on: ubuntu-latest
     steps:
       - name: Get branch name
         id: branch_name
@@ -25,9 +31,18 @@ jobs:
   create_neon_branch:
     name: Create Neon Branch
     needs: setup
-    if: github.event_name == 'create'
+    if: github.event_name == 'create' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
+      - name: Determine target branch name
+        id: resolve_branch
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "BRANCH_NAME=${{ github.event.inputs.target_branch }}" >> $GITHUB_ENV
+          else
+            echo "BRANCH_NAME=${{ needs.setup.outputs.branch }}" >> $GITHUB_ENV
+          fi
+
       - name: Get branch expiration date as an env variable (2 weeks from now)
         id: get_expiration_date
         run: echo "EXPIRES_AT=$(date -u --date '+14 days' +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
@@ -37,8 +52,7 @@ jobs:
         uses: neondatabase/create-branch-action@v6
         with:
           project_id: ${{ vars.NEON_PROJECT_ID }}
-          # Naming: branch/<branch-name>
-          branch_name: branch/${{ needs.setup.outputs.branch }}
+          branch_name: ${{ env.BRANCH_NAME }}
           api_key: ${{ secrets.NEON_API_KEY }}
           expires_at: ${{ env.EXPIRES_AT }}
 
@@ -52,5 +66,5 @@ jobs:
         uses: neondatabase/delete-branch-action@v3
         with:
           project_id: ${{ vars.NEON_PROJECT_ID }}
-          branch: branch/${{ needs.setup.outputs.branch }}
+          branch: ${{ needs.setup.outputs.branch }}
           api_key: ${{ secrets.NEON_API_KEY }}
