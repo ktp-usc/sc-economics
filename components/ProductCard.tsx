@@ -15,8 +15,7 @@ interface Product {
 
 interface ProductCardProps {
     product: Product;
-    // pass the full product so parent can create a checkout session
-    onRegisterNow?: (product: Product) => void;
+    onRegisterNow?: (productId: string) => void;
 }
 
 export function ProductCard({ product, onRegisterNow }: ProductCardProps) {
@@ -65,7 +64,7 @@ export function ProductCard({ product, onRegisterNow }: ProductCardProps) {
             <CardFooter className="p-4 pt-0">
                 <Button
                     className="w-full"
-                    onClick={() => onRegisterNow?.(product)}
+                    onClick={() => onRegisterNow?.(product.id)}
                     disabled={!product.inStock}
                 >
                     {product.inStock ? 'Register Now' : 'Sold Out'}
