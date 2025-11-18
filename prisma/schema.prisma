@@ -1,0 +1,70 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Item {
+  id          String       @id @default(uuid())
+  name        String
+  type        PurchaseType
+  description String
+  price       Float
+  available   Int
+  createdAt   DateTime     @default(now())
+  image       String       @default("https://media.licdn.com/dms/image/C4D0BAQHtbhjNR_mP_A/company-logo_200_200/0/1630567346569/sc_economics_logo?e=2147483647&v=beta&t=tOe_QxJ6BhwZ3-dxGehJ-dC5IXtjRtHqdvVH1y0bgvk")
+  status      Status       @default(Active)
+}
+
+model Purchase {
+  id        String         @id @default(uuid())
+  itemName  String
+  amount    Float
+  type      PurchaseType
+  reason    String
+  date      DateTime       @default(now())
+  status    PurchaseStatus
+  addressId String         @unique
+  email     String
+  firstName String
+  lastName  String
+  address   Address        @relation(fields: [addressId], references: [id])
+}
+
+model Address {
+  id       String    @id @default(uuid())
+  street   String
+  city     String
+  state    String
+  zipCode  String
+  country  String
+  purchase Purchase?
+}
+
+model admin {
+  id       String @id @default(uuid())
+  username String
+  password String
+}
+
+enum PurchaseType {
+  donation
+  workshop
+  event
+  merchandise
+}
+
+enum PurchaseStatus {
+  completed
+  pending
+  refunded
+}
+
+enum Status {
+  Active
+  Inactive
+}
