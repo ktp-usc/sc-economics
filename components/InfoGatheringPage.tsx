@@ -221,6 +221,13 @@ export function InfoGatheringPage({ donationAmount, registrationData, onBack, on
                         >
                             {registrationData ? 'Complete Registration' : 'Proceed to Payment'}
                         </Button>
+
+                        <Button
+                            onClick={onSubmit}
+                            className="w-full h-12 mt-6 bg-[#53B54F]"
+                        >
+                            {'Continue as Guest'}
+                        </Button>
                     </CardContent>
                 </Card>
             </div>
