@@ -1,10 +1,9 @@
-import { neon } from '@neondatabase/serverless';
+import { PrismaClient } from '@prisma/client';
 
-const connectionString =
-    process.env.NEW_DATABASE_URL ?? process.env.DATABASE_URL;
+const globalForPrisma = globalThis as unknown as {
+    prisma: PrismaClient | undefined;
+};
 
-if (!connectionString) {
-    throw new Error('Missing database connection string');
-}
+export const prisma = globalForPrisma.prisma ?? new PrismaClient();
 
-export const sql = neon(connectionString);
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;

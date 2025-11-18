@@ -1,38 +1,53 @@
-import {NextRequest, NextResponse} from "next/server";
-import {sql} from "@/lib/db";
-import {compare} from "bcryptjs";
-import {error} from "@smithy/core/schema";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { comparePassword } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
     try {
-        const {username, password} = await req.json();
+        const { username, password } = await req.json();
 
         if (!username || !password) {
-            return NextResponse.json({error: "Missing credentials"}, {status: 400});
+            return NextResponse.json({ error: "Missing credentials" }, { status: 400 });
         }
 
-        const rows = await sql`
-            SELECT id, username, password_hash
-            FROM users
-            WHERE username = ${username} LIMIT 1;
-        `;
+        // Find user by username using Prisma
+        const user = await prisma.user.findUnique({
+            where: { username },
+        });
 
-        if (!rows.length) {
-            return NextResponse.json({error: "Invalid username or password"}, {status: 401});
+        if (!user) {
+            return NextResponse.json(
+                { error: "Invalid username or password" },
+                { status: 401 }
+            );
         }
 
-        const user = rows[0];
-        const valid = await compare(password, user.password_hash);
+        // Verify password
+        const isValidPassword = await comparePassword(password, user.passwordHash);
 
-        if (!valid) {
-            return NextResponse.json({error: "Invalid username or password"}, {status: 401});
+        if (!isValidPassword) {
+            return NextResponse.json(
+                { error: "Invalid username or password" },
+                { status: 401 }
+            );
         }
 
-        // Issue a session token or store a flag in sessionStorage as you had
-        return NextResponse.json({message: "Login ok", user: {id: user.id, username: user.username}});
+        return NextResponse.json(
+            {
+                message: "Login successful",
+                user: {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email
+                }
+            },
+            { status: 200 }
+        );
     } catch (error) {
-        console.error("Login error", error);
-        return NextResponse.json({error: "Server error"}, {status: 500});
+        console.error("Login error:", error);
+        return NextResponse.json(
+            { error: "An error occurred during login" },
+            { status: 500 }
+        );
     }
-
 }
