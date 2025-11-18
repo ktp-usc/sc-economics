@@ -11,10 +11,10 @@ interface InfoGatheringPageProps {
     donationType?: string;
     registrationData?: { productId: string; productName: string } | null;
     onBack: () => void;
-    onSubmit: (data: any) => void;
+    onSubmit: () => void;
 }
 
-export function InfoGatheringPage({ donationAmount, donationType, registrationData, onBack, onSubmit }: InfoGatheringPageProps) {
+export function InfoGatheringPage({ donationAmount, registrationData, onBack, onSubmit }: InfoGatheringPageProps) {
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -29,10 +29,6 @@ export function InfoGatheringPage({ donationAmount, donationType, registrationDa
 
     const handleInputChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
-    };
-
-    const handleSubmit = () => {
-        onSubmit(formData);
     };
 
     const isFormValid = formData.firstName && formData.lastName && formData.email &&
@@ -219,7 +215,7 @@ export function InfoGatheringPage({ donationAmount, donationType, registrationDa
 
                         {/* Submit Button */}
                         <Button
-                            onClick={handleSubmit}
+                            onClick={onSubmit}
                             disabled={!isFormValid}
                             className="w-full h-12 mt-6"
                         >

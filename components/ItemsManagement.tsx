@@ -11,7 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Edit2, Trash2, Upload, X } from 'lucide-react';
 import { createItem, deleteItem, editItem } from '@/lib/item';
-import { Item, PurchaseType, Status } from '@prisma/client';
+import { Item, PurchaseType } from '@prisma/client';
+import Image from "next/image";
 
 type ListedItem = {
     id: string;
@@ -52,12 +53,12 @@ export function ItemsManagement() {
                 if (!res.ok) throw new Error(`Failed to fetch items: ${res.status}`);
                 const data = await res.json();
 
-                const mapped: ListedItem[] = (data || []).map((it: any) => ({
+                const mapped: ListedItem[] = (data || []).map((it: ListedItem) => ({
                     id: String(it.id),
                     name: String(it.name ?? ''),
                     type: it.type as PurchaseType,
                     description: String(it.description ?? ''),
-                    price: typeof it.price === 'string' ? parseFloat(it.price) : Number(it.price ?? 0),
+                    price: Number(it.price ?? 0),
                     available: Number(it.available ?? 0),
                     status: it.status === 'Active' ? 'Active' : 'Inactive',
                     createdAt: it.createdAt ? new Date(it.createdAt).toISOString().split('T')[0] : '',
@@ -66,7 +67,6 @@ export function ItemsManagement() {
 
                 if (mounted) setItems(mapped);
             } catch (err) {
-                // eslint-disable-next-line no-console
                 console.error('Error fetching items', err);
             }
         }
@@ -154,7 +154,7 @@ export function ItemsManagement() {
                     description: updated?.description ?? payload.description,
                     price: typeof updated?.price === 'string' ? parseFloat(updated.price) : (updated?.price ?? payload.price),
                     available: updated?.available ?? payload.available,
-                    status: editingItem.status,
+                    status: updated?.status ?? payload.status,
                     createdAt: editingItem.createdAt,
                     image: updated?.image ?? payload.image
                 };
@@ -180,7 +180,7 @@ export function ItemsManagement() {
                 status: formData.status,
                 price,
                 available,
-                image: formData.image ?? ''
+                image: formData.image || 'https://media.licdn.com/dms/image/C4D0BAQHtbhjNR_mP_A/company-logo_200_200/0/1630567346569/sc_economics_logo?e=2147483647&v=beta&t=tOe_QxJ6BhwZ3-dxGehJ-dC5IXtjRtHqdvVH1y0bgvk'
             };
 
             try {
@@ -193,9 +193,9 @@ export function ItemsManagement() {
                     description: created?.description ?? payload.description ?? '',
                     price: typeof created?.price === 'string' ? parseFloat(created.price) : (created?.price ?? payload.price ?? 0),
                     available: created?.available ?? (payload.available ?? 0),
-                    status: created.status??(payload.status as Status)??'Active',
+                    status: created.status??'Active',
                     createdAt: created?.createdAt ? new Date(created.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-                    image: created?.image ?? payload.image ?? ''
+                    image: created?.image ?? payload.image
                 };
 
                 setItems(prev => [...prev, newItem]);
@@ -311,7 +311,7 @@ export function ItemsManagement() {
                                 <div className="space-y-3">
                                     {formData.image ? (
                                         <div className="relative inline-block">
-                                            <img src={formData.image} alt="Preview" className="w-32 h-32 rounded-md object-cover border" />
+                                            <Image src={formData.image} alt="Preview" width={128} height={128} className="w-32 h-32 rounded-md object-cover border" />
                                             <Button type="button" variant="destructive" size="sm" className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0" onClick={removeImage}>
                                                 <X className="h-3 w-3" />
                                             </Button>
@@ -389,7 +389,7 @@ export function ItemsManagement() {
                                 <TableCell>
                                     <div className="flex items-center gap-3">
                                         {item.image ? (
-                                            <img src={item.image} alt={item.name} className="w-12 h-12 rounded-md object-cover flex-shrink-0" />
+                                            <Image src={item.image} alt={item.name} width={128} height={128} className="w-12 h-12 rounded-md object-cover flex-shrink-0" />
                                         ) : (
                                             <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center flex-shrink-0">
                                                 <Upload className="h-5 w-5 text-muted-foreground" />
@@ -484,7 +484,7 @@ export function ItemsManagement() {
                             <div className="space-y-3">
                                 {formData.image ? (
                                     <div className="relative inline-block">
-                                        <img src={formData.image} alt="Preview" className="w-32 h-32 rounded-md object-cover border" />
+                                        <Image src={formData.image} alt="Preview" width={128} height={128} className="w-32 h-32 rounded-md object-cover border" />
                                         <Button type="button" variant="destructive" size="sm" className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0" onClick={removeImage}>
                                             <X className="h-3 w-3" />
                                         </Button>
