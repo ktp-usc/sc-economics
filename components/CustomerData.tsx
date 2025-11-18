@@ -1,33 +1,13 @@
-import { useEffect, useRef, useState } from "react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "./ui/table";
-import { Badge } from "./ui/badge";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "./ui/card";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "./ui/dialog";
-import { Search, Download, Eye } from "lucide-react";
-import { Separator } from "./ui/separator";
+import {useEffect, useState} from "react";
+import {Button} from "./ui/button";
+import {Input} from "./ui/input";
+import {Label} from "./ui/label";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "./ui/table";
+import {Badge} from "./ui/badge";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from "./ui/card";
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,} from "./ui/dialog";
+import {Download, Eye, Search} from "lucide-react";
+import {Separator} from "./ui/separator";
 
 type customerPurchase = {
     id: string;
@@ -64,12 +44,12 @@ export function CustomerData() {
 
         async function fetchItems() {
             try {
-                const res = await fetch("/api/purchase", { signal: controller.signal });
+                const res = await fetch("/api/purchase", {signal: controller.signal});
                 if (!res.ok)
                     throw new Error(`Failed to fetch purchases: ${res.status}`);
                 const data = await res.json();
 
-                const mapped: customerPurchase[] = (data || []).map((it: any) => ({
+                const mapped: customerPurchase[] = (data || []).map((it: customerPurchase) => ({
                     id: String(it.id),
                     firstName: String(it.firstName ?? ""),
                     lastName: String(it.lastName ?? ""),
@@ -89,7 +69,7 @@ export function CustomerData() {
 
                     itemName: String(it.itemName ?? ""),
                     amount:
-                        typeof it.amount === "string" ? parseFloat(it.amount) : Number(it.amount ?? 0),
+                        Number(it.amount ?? 0),
                     type: (it.type ?? "donation") as customerPurchase["type"],
                     reason: String(it.reason ?? ""),
                     date: it.date ? new Date(it.date).toLocaleDateString() : "",
@@ -97,9 +77,8 @@ export function CustomerData() {
                 }));
 
                 if (mounted) setPurchases(mapped);
-            } catch (err: any) {
-                if (err.name === "AbortError") return;
-                // eslint-disable-next-line no-console
+            } catch (err: unknown) {
+                if (err instanceof Error && err.name === 'AbortError') return;
                 console.error("Error fetching purchases", err);
             }
         }
@@ -161,7 +140,7 @@ export function CustomerData() {
                 p.status,
             ]
                 .map((v) =>
-                    typeof v === "string" && (v.includes(",") || v.includes('"'))
+                    (v.includes(",") || v.includes('"'))
                         ? `"${String(v).replace(/"/g, '""')}"`
                         : String(v)
                 )
@@ -170,7 +149,7 @@ export function CustomerData() {
         const csv = [header.join(","), ...rows].join("\n");
 
         // create a download link
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -206,7 +185,8 @@ export function CustomerData() {
                     <div className="flex flex-col sm:flex-row gap-4 mb-6">
                         <div className="flex-1">
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Search
+                                    className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
                                 <Input
                                     placeholder="Search by name, email, item, or reason..."
                                     value={searchTerm}
@@ -217,7 +197,7 @@ export function CustomerData() {
                         </div>
 
                         <Button onClick={exportData} variant="outline">
-                            <Download className="h-4 w-4 mr-2" />
+                            <Download className="h-4 w-4 mr-2"/>
                             Export
                         </Button>
                     </div>
@@ -275,7 +255,7 @@ export function CustomerData() {
                                                         size="sm"
                                                         onClick={() => openDialogWithPurchase(purchase)}
                                                     >
-                                                        <Eye className="h-4 w-4" />
+                                                        <Eye className="h-4 w-4"/>
                                                     </Button>
                                                 </DialogTrigger>
 
@@ -296,11 +276,13 @@ export function CustomerData() {
                                                                     </Label>
                                                                     <div className="mt-1 space-y-1 text-sm">
                                                                         <div>
-                                                                            <span className="font-medium">Amount:</span>{" "}
+                                                                            <span
+                                                                                className="font-medium">Amount:</span>{" "}
                                                                             ${selectedPurchase.amount.toFixed(2)}
                                                                         </div>
                                                                         <div>
-                                                                            <span className="font-medium">Date:</span>{" "}
+                                                                            <span
+                                                                                className="font-medium">Date:</span>{" "}
                                                                             {selectedPurchase.date}
                                                                         </div>
                                                                         <div>
@@ -325,21 +307,24 @@ export function CustomerData() {
                                                                     </Label>
                                                                     <div className="mt-1 space-y-1 text-sm">
                                                                         <div>
-                                                                            <span className="font-medium">Name:</span>{" "}
+                                                                            <span
+                                                                                className="font-medium">Name:</span>{" "}
                                                                             {selectedPurchase.firstName} {selectedPurchase.lastName}
                                                                         </div>
                                                                         <div>
-                                                                            <span className="font-medium">Email:</span>{" "}
+                                                                            <span
+                                                                                className="font-medium">Email:</span>{" "}
                                                                             {selectedPurchase.email}
                                                                         </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
 
-                                                            <Separator />
+                                                            <Separator/>
 
                                                             <div>
-                                                                <Label className="text-sm font-medium">Customer Address</Label>
+                                                                <Label className="text-sm font-medium">Customer
+                                                                    Address</Label>
                                                                 <div className="mt-1 space-y-1 text-sm">
                                                                     <div>{selectedPurchase.address.street}</div>
                                                                     <div>
@@ -350,10 +335,11 @@ export function CustomerData() {
                                                                 </div>
                                                             </div>
 
-                                                            <Separator />
+                                                            <Separator/>
 
                                                             <div>
-                                                                <Label className="text-sm font-medium">Item Purchased</Label>
+                                                                <Label className="text-sm font-medium">Item
+                                                                    Purchased</Label>
                                                                 <div className="mt-1 text-sm p-3 bg-muted rounded-md">
                                                                     {selectedPurchase.itemName} — {selectedPurchase.reason}
                                                                 </div>
