@@ -1,5 +1,4 @@
 // app/success/page.tsx
-import { env } from 'process';
 import Stripe from 'stripe';
 import SuccessRedirect from './SuccessRedirect'
 
@@ -40,12 +39,13 @@ export default async function SuccessPage({ searchParams }: PageProps) {
 					<p>Status: {session.payment_status}</p>
 				</div>
 			);
-  	} catch (error) {
-    	return (
+	} catch (error) {
+		console.error(error)
+		return (
 			<div>
 				<h1>Error</h1>
 				<p>Could not retrieve session</p>
 			</div>
-    	);
-  	}
+		);
+	}
 }

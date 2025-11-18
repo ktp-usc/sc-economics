@@ -68,11 +68,12 @@ export async function POST(req: Request): Promise<NextResponse> {
         // Return the session URL as JSON to client for redirect
         return NextResponse.json({ url: session.url }, { status: 201 })
 
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error(err)
+        const message = err instanceof Error ? err.message : String(err)
         return NextResponse.json(
-        { error: err.message || 'Internal error' },
-        { status: err.statusCode || 500 }
+            { error: message || 'Internal error' },
+            { status: 500 }
         )
     }
 }

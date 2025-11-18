@@ -34,7 +34,7 @@ export function DonationPage({ onContinue }: DonationPageProps) {
 
             // Defensive handling in case the server returns non-JSON (HTML error page etc.)
             const contentType = res.headers.get('content-type') || '';
-            let data: any = null;
+            let data: unknown = null;
             if (contentType.includes('application/json')) {
                 data = await res.json();
             } else {
@@ -42,20 +42,27 @@ export function DonationPage({ onContinue }: DonationPageProps) {
                 throw new Error(`Unexpected server response (status ${res.status}): ${text}`);
             }
 
-            if (!res.ok) throw new Error(data?.error || 'Failed to create checkout session');
+            if (!res.ok) {
+                const parsedErr = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : {};
+                const serverMsg = typeof parsedErr.error === 'string' ? parsedErr.error : 'Failed to create checkout session';
+                throw new Error(serverMsg);
+            }
 
             // Optional callback for parent tracking
             try { if (onContinue) onContinue(amount, donationType); } catch (e) { console.warn(e); }
 
             // Redirect browser to Stripe Checkout page
-            if (data?.url) {
-                window.location.href = data.url;
+            const parsed = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : {};
+            const url = typeof parsed.url === 'string' ? parsed.url : null;
+            if (url) {
+                window.location.href = url;
             } else {
                 throw new Error('Missing checkout URL from server');
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            setError(err?.message || 'Unknown error');
+            const message = err instanceof Error ? err.message : String(err);
+            setError(message || 'Unknown error');
         } finally {
             setLoading(false);
         }
