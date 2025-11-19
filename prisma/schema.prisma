@@ -78,16 +78,13 @@ enum Status {
   Inactive
 }
 
-// model Types {
-//   id Int @id @default(autoincrement())
-//   name       String
-//   email      String
-//   isAdmin    Boolean
-//   largeInt   BigInt
-//   decimal    Float
-//   createdAt  DateTime
-//   updatedAt  DateTime
-//   preference Json
-//   blob       Bytes
-//   doner      User
-// }
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
