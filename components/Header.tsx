@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,27 +13,24 @@ interface HeaderProps {
 export function Header({ currentPage, onNavigate }: HeaderProps) {
     return (
         <header className="border-b bg-white sticky top-0 z-50 shadow-sm">
-            <div className="container mx-auto px-4 py-2">
-                <div className="flex items-center justify-between gap-4">
-                    <div className="flex flex-col items-left space-x-3 -ml-3">
-                        <div className="-mx-60">
-                                <Image
-                                    src={logo}   // adjust to your filename
-                                    alt="SC Economics"
-                                    width={200}           // choose a width that fits
-                                    // height={400}            // keep aspect ratio consistent
-                                    // className="h-40 w-auto object-contain my-0"
-                                    priority
-                                />
-                        </div>
-
+            <div className="container mx-auto px-4 py-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex flex-col items-start space-x-4 -ml-2">
+                        <Image
+                            src="/SCEcon.png"       // put your actual filename here
+                            alt="SC Economics"
+                            width={160}                // adjust to fit your design
+                            height={48}                // keep same aspect ratio
+                            className="h-15 w-auto object-contain"
+                            priority
+                        />
                         <div>
-                            {/*<h1 className="text-xl font-medium text-primary">SC ECONOMICS</h1>*/}
-                            <p className="text-sm text-muted-foreground static w-60 ml-3">Empowering teachers to integrate economics education</p>
+                            <p className="text-sm text-muted-foreground ml-4 w-60">
+                                Empowering teachers to integrate economics education
+                            </p>
                         </div>
                     </div>
 
-                    {/* Navigation buttons */}
                     <div className="flex items-center space-x-2">
                         <Button
                             variant={currentPage === 'fees' ? 'default' : 'ghost'}
