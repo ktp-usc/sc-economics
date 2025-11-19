@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import AdminPage from "@/app/admin/page";
-import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import {ProductCatalog} from "@/components/ProductCatalog";
 import {DonationPage} from "@/components/DonationPage";
@@ -89,7 +88,6 @@ export default function Home() {
             <Header currentPage={currentPage} onNavigate={handleNavigate} />
 
             <main>{renderCurrentPage()}</main>
-            <Toaster />
         </div>
     );
 }
