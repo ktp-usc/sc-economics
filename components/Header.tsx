@@ -5,8 +5,8 @@ import {LogIn} from "lucide-react";
 import logo from "../../public/SCEcon.png";
 
 interface HeaderProps {
-    currentPage: 'fees' | 'donation' | 'info';
-    onNavigate: (page: 'fees' | 'donation' | 'info') => void;
+    currentPage: 'fees' | 'donation' | 'info' | 'admin';
+    onNavigate: (page: 'fees' | 'donation' | 'info' | 'admin') => void;
 }
 
 export function Header({ currentPage, onNavigate }: HeaderProps) {

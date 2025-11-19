@@ -10,7 +10,7 @@ import { CustomerData } from '@/components/CustomerData';
 import { Package, DollarSign, Users, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export default function App() {
+export default function AdminPage() {
     const router = useRouter();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
