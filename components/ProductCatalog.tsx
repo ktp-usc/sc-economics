@@ -46,17 +46,21 @@ export function ProductCatalog({onRegisterNow}: ProductCatalogProps) {
             setError(null);
             try {
                 const res = await fetch("/api/item/active");
-                if (!res.ok) throw new Error(`Fetch failed (${res.status})`);
+                if (!res.ok) {
+                    setError(`Fetch failed (${res.status})`);
+                    setLoading(false);
+                    return;
+                }
                 const data = await res.json();
 
-                const mapped: Product[] = (data || []).map((it: Product) => ({
+                const mapped: Product[] = (data || []).map((it: any) => ({
                     id: String(it.id),
                     name: String(it.name ?? "Untitled"),
                     price: Number(it.price ?? 0),
                     description: String(it.description ?? ""),
                     image: String(it.image ?? ""),
-                    category: it.category ? String(it.category) : "Uncategorized",
-                    inStock: Number(it.inStock ?? 0) > 0,
+                    category: it.type ? String(it.type) : undefined,
+                    inStock: Number(it.available ?? 0) > 0,
                 }));
 
                 if (mounted) setProductList(mapped);
