@@ -20,7 +20,6 @@ export function DonationPage({ onContinue }: DonationPageProps) {
     const [donationType, setDonationType] = useState('one-time');
     const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
     const [customAmount, setCustomAmount] = useState('');
-    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const [donationOptions, setDonationOptions] = useState<DonationOption[]>([]);
