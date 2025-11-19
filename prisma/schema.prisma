@@ -24,6 +24,7 @@ model Purchase {
   id        String         @id @default(uuid())
   itemName  String
   amount    Float
+  stripeSessionId String?  @unique
   type      PurchaseType
   reason    String
   date      DateTime       @default(now())

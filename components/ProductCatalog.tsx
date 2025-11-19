@@ -24,7 +24,7 @@ interface Product {
 }
 
 interface ProductCatalogProps {
-    onRegisterNow?: (productId: string) => void;
+    onRegisterNow?: (product: Product) => void;
 }
 
 export function ProductCatalog({onRegisterNow}: ProductCatalogProps) {
@@ -49,15 +49,37 @@ export function ProductCatalog({onRegisterNow}: ProductCatalogProps) {
                 if (!res.ok) throw new Error(`Fetch failed (${res.status})`);
                 const data = await res.json();
 
-                const mapped: Product[] = (data || []).map((it: Product) => ({
-                    id: String(it.id),
-                    name: String(it.name ?? "Untitled"),
-                    price: Number(it.price ?? 0),
-                    description: String(it.description ?? ""),
-                    image: String(it.image ?? ""),
-                    category: it.category ? String(it.category) : "Uncategorized",
-                    inStock: Number(it.inStock ?? 0) > 0,
-                }));
+                function toProduct(input: unknown): Product | null {
+                    if (typeof input !== 'object' || input === null) return null
+                    const obj = input as Record<string, unknown>
+
+                    const rawAvailable = obj['available']
+                    let available: number | null = null
+                    if (typeof rawAvailable === 'number') available = rawAvailable
+                    else if (typeof rawAvailable === 'string' && rawAvailable.trim() !== '') {
+                        const n = Number(rawAvailable)
+                        if (!Number.isNaN(n)) available = n
+                    }
+
+                    const inStock = available == null ? true : Number(available) > 0
+
+                    const id = obj['id'] ?? obj['uuid'] ?? null
+                    if (id == null) return null
+
+                    return {
+                        id: String(id),
+                        name: String(obj['name'] ?? 'Untitled'),
+                        price: Number(obj['price'] ?? 0),
+                        description: String(obj['description'] ?? ''),
+                        image: String(obj['image'] ?? ''),
+                        category: obj['category'] ? String(obj['category']) : 'Uncategorized',
+                        inStock,
+                    }
+                }
+
+                const mapped: Product[] = Array.isArray(data)
+                    ? data.map((it: unknown) => toProduct(it)).filter((p): p is Product => p !== null)
+                    : []
 
                 if (mounted) setProductList(mapped);
             } catch (err: unknown) {

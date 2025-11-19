@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
     const purchases = await prisma.purchase.findMany({
         orderBy: { date: 'desc' },
+        include: { address: true },
     });
     return NextResponse.json(purchases);
 }

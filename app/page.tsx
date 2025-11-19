@@ -17,10 +17,48 @@ export default function Home() {
     const [donationData, setDonationData] = useState<{ amount: number; type: string } | null>(null);
     const [registrationData, setRegistrationData] = useState<{ productId: string; productName: string } | null>(null);
 
-    const handleRegisterNow = (productId: string) => {
-        setRegistrationData({ productId, productName: `Workshop ${productId}` });
-        setCurrentPage("info");
-        toast.success("Proceeding to registration details...");
+    type Product = {
+        id: string;
+        name: string;
+        price: number;
+        description: string;
+        image: string;
+        category?: string;
+        inStock: boolean;
+    };
+
+    const handleRegisterNow = async (product: Product) => {
+        try {
+            toast.loading('Redirecting to checkout...');
+            const res = await fetch('/api/checkout_sessions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amount: product.price,
+                    currency: 'usd',
+                    name: product.name,
+                    description: product.description,
+                    // No tax-specific source is sent
+                }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                const msg = data?.error || 'Failed to create checkout session';
+                toast.error(msg);
+                return;
+            }
+
+            if (data?.url) {
+                // redirect the browser to Stripe Checkout
+                window.location.href = data.url;
+            } else {
+                toast.error('No checkout URL returned');
+            }
+        } catch (err) {
+            console.error('Checkout error', err);
+            toast.error('Unexpected error creating checkout');
+        }
     };
 
     const handleNavigate = (page: PageType) => {
