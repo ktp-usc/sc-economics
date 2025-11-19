@@ -45,26 +45,16 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
                         >
                             Make a Donation
                         </Button>
-                        <Link href="/login" className="hidden md:block">
-                            <Button
-                                variant="outline"
-                                className="px-6 flex items-center gap-2"
-                            >
+                        <Button
+                            asChild
+                            variant="outline"
+                            className="px-6 w-full sm:w-auto flex items-center gap-2"
+                        >
+                            <Link href="/login">
                                 <LogIn className="h-4 w-4" />
                                 Admin Login
-                            </Button>
-                        </Link>
-
-                        {/* Small button with stacked text - shown on small screens */}
-                        <Link href="/login" className="md:hidden">
-                            <Button
-                                variant="outline"
-                                className="px-3 py-2 h-auto flex flex-col items-center gap-0 text-xs leading-tight"
-                            >
-                                <span>Admin</span>
-                                <span>Login</span>
-                            </Button>
-                        </Link>
+                            </Link>
+                        </Button>
                     </div>
                 </div>
             </div>
