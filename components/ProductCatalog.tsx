@@ -13,6 +13,16 @@ import {Input} from "@/components/ui/input";
 import {Search, Filter} from "lucide-react";
 import {ProductCard} from "@/components/ProductCard";
 
+interface ApiItem {
+    id: string;
+    name: string;
+    price: number;
+    description: string;
+    image: string;
+    type?: string;
+    available: number;
+}
+
 interface Product {
     id: string;
     name: string;
@@ -53,7 +63,7 @@ export function ProductCatalog({onRegisterNow}: ProductCatalogProps) {
                 }
                 const data = await res.json();
 
-                const mapped: Product[] = (data || []).map((it: any) => ({
+                const mapped: Product[] = (data || []).map((it: ApiItem) => ({
                     id: String(it.id),
                     name: String(it.name ?? "Untitled"),
                     price: Number(it.price ?? 0),
