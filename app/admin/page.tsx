@@ -29,7 +29,7 @@ export default function AdminPage() {
     const handleLogout = () => {
         sessionStorage.removeItem("isAuthenticated");
         sessionStorage.removeItem("username");
-        router.push("/login");
+        router.push("/");
     };
 
     if (isLoading) {
