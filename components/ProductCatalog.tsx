@@ -24,7 +24,7 @@ interface Product {
 }
 
 interface ProductCatalogProps {
-    onRegisterNow?: (productId: string) => void;
+    onRegisterNow?: (product: Product) => void;
 }
 
 export function ProductCatalog({onRegisterNow}: ProductCatalogProps) {

@@ -15,10 +15,10 @@ type PageType = "fees" | "donation" | "info" | "admin";
 export default function Home() {
     const [currentPage, setCurrentPage] = useState<PageType>("fees");
     const [donationData, setDonationData] = useState<{ amount: number; type: string } | null>(null);
-    const [registrationData, setRegistrationData] = useState<{ productId: string; productName: string } | null>(null);
+    const [registrationData, setRegistrationData] = useState<{ productId: string; productName: string; productPrice: number } | null>(null);
 
-    const handleRegisterNow = (productId: string) => {
-        setRegistrationData({ productId, productName: `Workshop ${productId}` });
+    const handleRegisterNow = (product: { id: string; name: string; price: number }) => {
+        setRegistrationData({ productId: product.id, productName: product.name, productPrice: product.price });
         setCurrentPage("info");
         toast.success("Proceeding to registration details...");
     };

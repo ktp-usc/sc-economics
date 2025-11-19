@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface InfoGatheringPageProps {
     donationAmount?: number;
     donationType?: string;
-    registrationData?: { productId: string; productName: string } | null;
+    registrationData?: { productId: string; productName: string; productPrice: number } | null;
     onBack: () => void;
     onSubmit: () => void;
 }
@@ -26,6 +26,8 @@ export function InfoGatheringPage({ donationAmount, registrationData, onBack, on
         zipCode: '',
         state: ''
     });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const handleInputChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -214,13 +216,79 @@ export function InfoGatheringPage({ donationAmount, registrationData, onBack, on
                         </div>
 
                         {/* Submit Button */}
-                        <Button
-                            onClick={onSubmit}
-                            disabled={!isFormValid}
-                            className="w-full h-12 mt-6"
-                        >
-                            {registrationData ? 'Complete Registration' : 'Proceed to Payment'}
-                        </Button>
+                        <div>
+                            {error && <p className="text-sm text-destructive mb-2">{error}</p>}
+                            <Button
+                                onClick={async () => {
+                                    if (registrationData) {
+                                        // Create checkout session for product purchase
+                                        setLoading(true);
+                                        setError(null);
+                                        try {
+                                            const res = await fetch('/api/checkout_sessions', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                    amount: registrationData.productPrice,
+                                                    currency: 'usd',
+                                                    description: registrationData.productName,
+                                                    productName: registrationData.productName,
+                                                    itemId: registrationData.productId
+                                                })
+                                            });
+
+                                            // Defensive handling in case the server returns non-JSON (HTML error page etc.)
+                                            const contentType = res.headers.get('content-type') || '';
+                                            let data: unknown = null;
+                                            if (contentType.includes('application/json')) {
+                                                data = await res.json();
+                                            } else {
+                                                const text = await res.text();
+                                                setError(`Unexpected server response (status ${res.status}): ${text}`);
+                                                setLoading(false);
+                                                return;
+                                            }
+
+                                            if (!res.ok) {
+                                                const parsedErr = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : {};
+                                                const serverMsg = typeof parsedErr.error === 'string' ? parsedErr.error : 'Failed to create checkout session';
+                                                setError(serverMsg);
+                                                setLoading(false);
+                                                return;
+                                            }
+
+                                            // Redirect browser to Stripe Checkout page
+                                            const parsed = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : {};
+                                            const url = typeof parsed.url === 'string' ? parsed.url : null;
+                                            if (url) {
+                                                window.location.href = url;
+                                            } else {
+                                                setError('Missing checkout URL from server');
+                                                setLoading(false);
+                                                return;
+                                            }
+                                        } catch (err: unknown) {
+                                            console.error(err);
+                                            const message = err instanceof Error ? err.message : String(err);
+                                            setError(message || 'Unknown error');
+                                            setLoading(false);
+                                        }
+                                    } else {
+                                        // For donations, call the original onSubmit
+                                        onSubmit();
+                                    }
+                                }}
+                                disabled={!isFormValid || loading}
+                                className="w-full h-12 mt-6"
+                            >
+                                {loading 
+                                    ? 'Redirecting...' 
+                                    : registrationData 
+                                        ? 'Proceed to Payment' 
+                                        : 'Proceed to Payment'
+                                }
+                            </Button>
+                        </div>
                     </CardContent>
                 </Card>
             </div>

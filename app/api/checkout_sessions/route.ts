@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
-import { stripe } from '../../../lib/stripe'
+import { stripe } from '@/lib/stripe'
 
 export async function POST(req: Request): Promise<NextResponse> {
     try {
@@ -8,6 +8,8 @@ export async function POST(req: Request): Promise<NextResponse> {
         // Expect amount in dollars
         const rawAmount = body.amount
         const currency = (body.currency || 'usd').toLowerCase()
+        const productName = body.productName // Optional: for product purchases
+        const itemId = body.itemId // Optional: for product purchases
 
         // Validation
         if (rawAmount == null) {
@@ -43,8 +45,8 @@ export async function POST(req: Request): Promise<NextResponse> {
             price_data: {
                 currency,
                 product_data: {
-                name: 'Donation',
-                description: body.description || 'Thanks for supporting us'
+                name: productName || 'Donation',
+                description: body.description || (productName ? 'Thanks for your purchase' : 'Thanks for supporting us')
                 },
                 unit_amount: amountInCents
             },
@@ -60,8 +62,8 @@ export async function POST(req: Request): Promise<NextResponse> {
 
         // metadata for identifying payment
         metadata: {
-            source: 'donation-form',
-            // ID from database
+            source: itemId ? 'product-purchase' : 'donation-form',
+            ...(itemId && { itemId: String(itemId) }) // Include itemId if provided
         }
         })
 
