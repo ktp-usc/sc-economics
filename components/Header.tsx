@@ -1,5 +1,7 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import {LogIn} from "lucide-react";
 
 interface HeaderProps {
     currentPage: 'fees' | 'donation' | 'info' | 'admin';
@@ -42,8 +44,45 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
                         >
                             Make a Donation
                         </Button>
+                        <Link href="/login" className="hidden md:block">
+                            <Button
+                                variant="outline"
+                                className="px-6 flex items-center gap-2"
+                            >
+                                <LogIn className="h-4 w-4" />
+                                Admin Login
+                            </Button>
+                        </Link>
+
+                        {/* Small button with stacked text - shown on small screens */}
+                        <Link href="/login" className="md:hidden">
+                            <Button
+                                variant="outline"
+                                className="px-3 py-2 h-auto flex flex-col items-center gap-0 text-xs leading-tight"
+                            >
+                                <span>Admin</span>
+                                <span>Login</span>
+                            </Button>
+                        </Link>
+                        {/*<Link href="/login">*/}
+                        {/*    <Button*/}
+                        {/*        variant="outline"*/}
+                        {/*        className="px-6 flex items-center gap-2"*/}
+                        {/*    >*/}
+                        {/*        <LogIn className="h-4 w-4" />*/}
+                        {/*        Admin Login*/}
+                        {/*    </Button>*/}
+                        {/*</Link>*/}
                     </div>
                 </div>
+                {/*<div className="absolute top-1.5 right-10">*/}
+                {/*    <Link*/}
+                {/*        href="/login"*/}
+                {/*        className="text-xs text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline"*/}
+                {/*    >*/}
+                {/*        Admin Login*/}
+                {/*    </Link>*/}
+                {/*</div>*/}
             </div>
         </header>
     );
