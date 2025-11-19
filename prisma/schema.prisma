@@ -45,10 +45,24 @@ model Address {
   purchase Purchase?
 }
 
-model admin {
-  id       String @id @default(uuid())
-  username String
-  password String
+model DonationOption {
+  id        String   @id @default(uuid())
+  name      String
+  amount    Float
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username     String   @unique
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("users")
 }
 
 enum PurchaseType {
