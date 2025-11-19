@@ -51,7 +51,7 @@ export function DonationPage({ onContinue }: DonationPageProps) {
         void fetchDonationOptions();
     }, []);
 
-    const handleContinue = async () => {
+    const handleContinue = async (anonymouse = false) => {
         const amount = selectedAmount ?? parseFloat(customAmount || '0');
         if (!(amount > 0)) return;
 
@@ -61,7 +61,7 @@ export function DonationPage({ onContinue }: DonationPageProps) {
             const res = await fetch('/api/checkout_sessions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount, currency: 'usd', description: 'Donation' })
+                body: JSON.stringify({ amount, currency: 'usd', description: 'Donation', anonymouse })
             });
 
             // Defensive handling in case the server returns non-JSON (HTML error page etc.)
@@ -219,11 +219,21 @@ export function DonationPage({ onContinue }: DonationPageProps) {
                         <div>
                             {error && <p className="text-sm text-destructive mb-2">{error}</p>}
                             <Button
-                                onClick={handleContinue}
+                                onClick={() =>handleContinue(false)}
                                 disabled={!isAmountSelected || loading}
                                 className="w-full h-12"
                             >
                                 {loading ? 'Redirecting…' : 'Continue to Details'}
+                            </Button>
+                        </div>
+                        <div>
+                            {error && <p className="text-sm text-destructive mb-2">{error}</p>}
+                            <Button
+                                onClick={() =>handleContinue(true)}
+                                disabled={!isAmountSelected || loading}
+                                className="w-full h-12 bg-[#53B54F]"
+                            >
+                                {loading ? 'Redirecting…' : 'Donate Anonymously'}
                             </Button>
                         </div>
                     </CardContent>

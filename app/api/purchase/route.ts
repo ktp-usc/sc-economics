@@ -8,7 +8,6 @@ export async function GET() {
             address: true, // <-- important if address is a related table
         },
     });
-    console.log(purchases[0])
     return NextResponse.json(purchases);
 }
 
