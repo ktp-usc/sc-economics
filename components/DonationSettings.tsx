@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,17 +10,41 @@ type DonationOption = {
     id: string;
     name: string;
     amount: number;
+    order?: number;
 };
 
 const initialDonationOptions: DonationOption[] = [
-    { id: '1', name: 'Small Donation', amount: 25 },
-    { id: '2', name: 'Medium Donation', amount: 50 },
-    { id: '3', name: 'Large Donation', amount: 100 },
-    { id: '4', name: 'Major Donation', amount: 250 }
+    { id: '1', name: 'Small Donation', amount: 25, order: 0 },
+    { id: '2', name: 'Medium Donation', amount: 50, order: 1 },
+    { id: '3', name: 'Large Donation', amount: 100, order: 2 },
+    { id: '4', name: 'Major Donation', amount: 250, order: 3 }
 ];
 
 export function DonationSettings() {
     const [donationOptions, setDonationOptions] = useState<DonationOption[]>(initialDonationOptions);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        const fetchDonationOptions = async () => {
+            try {
+                const response = await fetch('/api/donation-option');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.length > 0) {
+                        setDonationOptions(data);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching donation options:', error);
+                toast.error('Failed to load donation options');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        void fetchDonationOptions();
+    }, []);
 
     const handleOptionUpdate = (id: string, field: keyof DonationOption, value: string | number) => {
         setDonationOptions(donationOptions.map(option =>
@@ -28,9 +52,38 @@ export function DonationSettings() {
         ));
     };
 
-    const saveSettings = () => {
-        // In a real app, this would save to the backend
-        toast('Donation options saved successfully!');
+    const saveSettings = async () => {
+        setSaving(true);
+        try {
+            const optionsToSave = donationOptions.map((option, index) => ({
+                name: option.name,
+                amount: option.amount,
+                order: option.order !== undefined ? option.order : index,
+            }));
+
+            const response = await fetch('/api/donation-option', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(optionsToSave),
+            });
+
+            if (response.ok) {
+                const savedOptions = await response.json();
+                setDonationOptions(savedOptions);
+                toast.success('Donation options saved successfully!');
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Failed to save donation options:', errorData);
+                toast.error('Failed to save donation options');
+            }
+        } catch (error) {
+            console.error('Error saving donation options:', error);
+            toast.error('Failed to save donation options');
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (
@@ -98,9 +151,9 @@ export function DonationSettings() {
             </Card>
 
             <div className="flex justify-end">
-                <Button onClick={saveSettings} className="flex items-center gap-2">
+                <Button onClick={saveSettings} disabled={loading || saving} className="flex items-center gap-2">
                     <Save className="h-4 w-4" />
-                    Save Donation Options
+                    {saving ? 'Saving...' : 'Save Donation Options'}
                 </Button>
             </div>
         </div>

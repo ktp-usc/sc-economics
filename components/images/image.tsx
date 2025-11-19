@@ -1,8 +1,6 @@
-"use client"
-
+"use client";
 import React, { useState } from 'react'
 import error_img from "@/public/error_img.svg"
-
 
 export function ImageWithFallback(props: React.ImgHTMLAttributes<HTMLImageElement>) {
     const [didError, setDidError] = useState(false)

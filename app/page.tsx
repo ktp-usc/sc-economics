@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import AdminPage from "@/app/admin/page";
-import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import {ProductCatalog} from "@/components/ProductCatalog";
 import {DonationPage} from "@/components/DonationPage";
@@ -88,18 +87,7 @@ export default function Home() {
         <div className="min-h-screen bg-background">
             <Header currentPage={currentPage} onNavigate={handleNavigate} />
 
-            {/* Example button to navigate to admin */}
-            <div className="flex justify-end p-4">
-                <button
-                    onClick={() => setCurrentPage("admin")}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-                >
-                    Go to Admin Page
-                </button>
-            </div>
-
             <main>{renderCurrentPage()}</main>
-            <Toaster />
         </div>
     );
 }
