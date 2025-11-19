@@ -45,10 +45,13 @@ model Address {
   purchase Purchase?
 }
 
-model admin {
-  id       String @id @default(uuid())
-  username String
-  password String
+model DonationOption {
+  id        String   @id
+  name      String
+  amount    Float
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime
 }
 
 enum PurchaseType {
