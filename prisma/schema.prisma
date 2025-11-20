@@ -35,6 +35,7 @@ model Purchase {
   address   Address?       @relation(fields: [addressId], references: [id])
   itemName  String
   amount    Float
+  stripeSessionId String?  @unique
   type      PurchaseType
   reason    String
   date      DateTime       @default(now())
