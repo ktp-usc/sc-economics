@@ -13,16 +13,6 @@ import {Input} from "@/components/ui/input";
 import {Search, Filter} from "lucide-react";
 import {ProductCard} from "@/components/ProductCard";
 
-interface ApiItem {
-    id: string;
-    name: string;
-    price: number;
-    description: string;
-    image: string;
-    type?: string;
-    available: number;
-}
-
 interface Product {
     id: string;
     name: string;
@@ -63,15 +53,37 @@ export function ProductCatalog({onRegisterNow}: ProductCatalogProps) {
                 }
                 const data = await res.json();
 
-                const mapped: Product[] = (data || []).map((it: ApiItem) => ({
-                    id: String(it.id),
-                    name: String(it.name ?? "Untitled"),
-                    price: Number(it.price ?? 0),
-                    description: String(it.description ?? ""),
-                    image: String(it.image ?? ""),
-                    category: it.type ? String(it.type) : undefined,
-                    inStock: Number(it.available ?? 0) > 0,
-                }));
+                function toProduct(input: unknown): Product | null {
+                    if (typeof input !== 'object' || input === null) return null
+                    const obj = input as Record<string, unknown>
+
+                    const rawAvailable = obj['available']
+                    let available: number | null = null
+                    if (typeof rawAvailable === 'number') available = rawAvailable
+                    else if (typeof rawAvailable === 'string' && rawAvailable.trim() !== '') {
+                        const n = Number(rawAvailable)
+                        if (!Number.isNaN(n)) available = n
+                    }
+
+                    const inStock = available == null ? true : Number(available) > 0
+
+                    const id = obj['id'] ?? obj['uuid'] ?? null
+                    if (id == null) return null
+
+                    return {
+                        id: String(id),
+                        name: String(obj['name'] ?? 'Untitled'),
+                        price: Number(obj['price'] ?? 0),
+                        description: String(obj['description'] ?? ''),
+                        image: String(obj['image'] ?? ''),
+                        category: obj['category'] ? String(obj['category']) : 'Uncategorized',
+                        inStock,
+                    }
+                }
+
+                const mapped: Product[] = Array.isArray(data)
+                    ? data.map((it: unknown) => toProduct(it)).filter((p): p is Product => p !== null)
+                    : []
 
                 if (mounted) setProductList(mapped);
             } catch (err: unknown) {

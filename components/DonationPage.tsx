@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -9,15 +9,48 @@ interface DonationPageProps {
     onContinue: (amount: number, type: string) => void;
 }
 
+type DonationOption = {
+    id: string;
+    name: string;
+    amount: number;
+    order: number;
+};
+
 export function DonationPage({ onContinue }: DonationPageProps) {
     const [donationType, setDonationType] = useState('one-time');
+    const [anonymous, setAnonymous] = useState(false);
+    const [coverFees, setCoverFees] = useState(false);
     const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
     const [customAmount, setCustomAmount] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    
+    const [donationOptions, setDonationOptions] = useState<DonationOption[]>([]);
 
-    const presetAmounts = [25, 50, 100, 250];
+    // Default fallback amounts if no options are loaded
+    const defaultAmounts = [25, 50, 100, 250];
+    const presetAmounts = donationOptions.length > 0
+        ? donationOptions.map(option => option.amount)
+        : defaultAmounts;
+
+    useEffect(() => {
+        const fetchDonationOptions = async () => {
+            try {
+                const response = await fetch('/api/donation-option');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.length > 0) {
+                        setDonationOptions(data);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching donation options:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        void fetchDonationOptions();
+    }, []);
 
     const handleContinue = async () => {
         const amount = selectedAmount ?? parseFloat(customAmount || '0');
@@ -26,10 +59,27 @@ export function DonationPage({ onContinue }: DonationPageProps) {
         setLoading(true);
         setError(null);
         try {
+            // compute amount to charge: if coverFees selected, add estimated fee (2.9% + $0.30)
+            const baseAmount = amount;
+            let amountToSend = baseAmount;
+            if (coverFees) {
+                const fee = baseAmount * 0.029 + 0.3;
+                amountToSend = Number((baseAmount + fee).toFixed(2));
+            }
+
             const res = await fetch('/api/checkout_sessions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount, currency: 'usd', description: 'Donation' })
+                body: JSON.stringify({
+                    amount: amountToSend,
+                    currency: 'usd',
+                    name: 'Donation',
+                    description: `Donation (${donationType})`,
+                    source: 'donation-page',
+                    interval: donationType,
+                    anonymous: anonymous,
+                    coverFees: coverFees,
+                })
             });
 
             // Defensive handling in case the server returns non-JSON (HTML error page etc.)
@@ -69,6 +119,7 @@ export function DonationPage({ onContinue }: DonationPageProps) {
     };
 
     const isAmountSelected = selectedAmount !== null || (customAmount && parseFloat(customAmount) > 0);
+    const displayAmount = selectedAmount ?? parseFloat(customAmount || '0');
 
     return (
         <div className="min-h-screen bg-background py-8">
@@ -127,21 +178,37 @@ export function DonationPage({ onContinue }: DonationPageProps) {
                         </div>
 
                         {/* Preset Amounts */}
-                        <div className="grid grid-cols-2 gap-3">
-                            {presetAmounts.map((amount) => (
-                                <Button
-                                    key={amount}
-                                    variant={selectedAmount === amount ? 'default' : 'outline'}
-                                    onClick={() => {
-                                        setSelectedAmount(amount);
-                                        setCustomAmount('');
-                                    }}
-                                    className="h-16 text-lg"
-                                >
-                                    ${amount}
-                                </Button>
-                            ))}
-                        </div>
+                        {!loading && (
+                            <div className="grid grid-cols-2 gap-3">
+                                {presetAmounts.map((amount, index) => (
+                                    <Button
+                                        key={donationOptions[index]?.id || `amount-${amount}`}
+                                        variant={selectedAmount === amount ? 'default' : 'outline'}
+                                        onClick={() => {
+                                            setSelectedAmount(amount);
+                                            setCustomAmount('');
+                                        }}
+                                        className="h-16 text-lg"
+                                    >
+                                        ${amount}
+                                    </Button>
+                                ))}
+                            </div>
+                        )}
+                        {loading && (
+                            <div className="grid grid-cols-2 gap-3">
+                                {defaultAmounts.map((amount) => (
+                                    <Button
+                                        key={`loading-${amount}`}
+                                        variant="outline"
+                                        disabled
+                                        className="h-16 text-lg"
+                                    >
+                                        ${amount}
+                                    </Button>
+                                ))}
+                            </div>
+                        )}
 
                         {/* Custom Amount */}
                         <div>
@@ -164,6 +231,33 @@ export function DonationPage({ onContinue }: DonationPageProps) {
                                     min="0"
                                     step="0.01"
                                 />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-medium text-foreground block mb-2">Donate Anonymously</label>
+                            <div className="flex items-center gap-2">
+                                <Button variant={anonymous ? 'default' : 'outline'} onClick={() => setAnonymous((s) => !s)}>
+                                    {anonymous ? 'Anonymous: ON' : 'Anonymous: OFF'}
+                                </Button>
+                                <div className="text-sm text-muted-foreground">If enabled, your name will be replaced with ANONYMOUS in records.</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-medium text-foreground block mb-2">Cover processing fees</label>
+                            <div className="flex items-center gap-2">
+                                <Button variant={coverFees ? 'default' : 'outline'} onClick={() => setCoverFees((s) => !s)}>
+                                    {coverFees ? 'Cover Fees: ON' : 'Cover Fees: OFF'}
+                                </Button>
+                                <div className="text-sm text-muted-foreground">If enabled, an estimated processing fee (2.9% + $0.30) will be added to your donation.</div>
+                            </div>
+                            <div className="mt-2 text-sm">
+                                {coverFees ? (
+                                    <span className="text-muted-foreground">Total with fees: $<strong>{Number((displayAmount * 1 + (displayAmount * 0.029 + 0.3)).toFixed(2))}</strong></span>
+                                ) : (
+                                    <span className="text-muted-foreground">Total: ${displayAmount.toFixed(2)}</span>
+                                )}
                             </div>
                         </div>
 

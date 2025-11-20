@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import AdminPage from "@/app/admin/page";
-import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import {ProductCatalog} from "@/components/ProductCatalog";
 import {DonationPage} from "@/components/DonationPage";
@@ -17,10 +16,48 @@ export default function Home() {
     const [donationData, setDonationData] = useState<{ amount: number; type: string } | null>(null);
     const [registrationData, setRegistrationData] = useState<{ productId: string; productName: string; productPrice: number } | null>(null);
 
-    const handleRegisterNow = (product: { id: string; name: string; price: number }) => {
-        setRegistrationData({ productId: product.id, productName: product.name, productPrice: product.price });
-        setCurrentPage("info");
-        toast.success("Proceeding to registration details...");
+    type Product = {
+        id: string;
+        name: string;
+        price: number;
+        description: string;
+        image: string;
+        category?: string;
+        inStock: boolean;
+    };
+
+    const handleRegisterNow = async (product: Product) => {
+        try {
+            toast.loading('Redirecting to checkout...');
+            const res = await fetch('/api/checkout_sessions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amount: product.price,
+                    currency: 'usd',
+                    name: product.name,
+                    description: product.description,
+                    // No tax-specific source is sent
+                }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                const msg = data?.error || 'Failed to create checkout session';
+                toast.error(msg);
+                return;
+            }
+
+            if (data?.url) {
+                // redirect the browser to Stripe Checkout
+                window.location.href = data.url;
+            } else {
+                toast.error('No checkout URL returned');
+            }
+        } catch (err) {
+            console.error('Checkout error', err);
+            toast.error('Unexpected error creating checkout');
+        }
     };
 
     const handleNavigate = (page: PageType) => {
@@ -88,18 +125,7 @@ export default function Home() {
         <div className="min-h-screen bg-background">
             <Header currentPage={currentPage} onNavigate={handleNavigate} />
 
-            {/* Example button to navigate to admin */}
-            <div className="flex justify-end p-4">
-                <button
-                    onClick={() => setCurrentPage("admin")}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-                >
-                    Go to Admin Page
-                </button>
-            </div>
-
             <main>{renderCurrentPage()}</main>
-            <Toaster />
         </div>
     );
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { stripe } from '@/lib/stripe'
+import Stripe from 'stripe'
 
 export async function POST(req: Request): Promise<NextResponse> {
     try {
@@ -8,6 +9,8 @@ export async function POST(req: Request): Promise<NextResponse> {
         // Expect amount in dollars
         const rawAmount = body.amount
         const currency = (body.currency || 'usd').toLowerCase()
+        // interval: 'one-time' | 'monthly' | 'quarterly' | 'yearly'
+        const interval = (body.interval || 'one-time').toString();
         const productName = body.productName // Optional: for product purchases
         const itemId = body.itemId // Optional: for product purchases
 
@@ -36,36 +39,62 @@ export async function POST(req: Request): Promise<NextResponse> {
         const headersList = await headers()
         const origin = headersList.get('origin') || `${process.env.NEXT_PUBLIC_APP_URL}`
 
-        const session = await stripe.checkout.sessions.create({
-        
-       // Update payment methods (look into ACH and direct debit)
-        payment_method_types: ['card', 'cashapp', 'crypto', 'link'],
-        line_items: [
-            {
-            price_data: {
-                currency,
-                product_data: {
-                name: productName || 'Donation',
-                description: body.description || (productName ? 'Thanks for your purchase' : 'Thanks for supporting us')
-                },
-                unit_amount: amountInCents
-            },
-            quantity: 1
+        // Build price_data.recurring for subscription modes
+        let recurring: Stripe.Price.Recurring | undefined = undefined;
+        let mode: 'payment' | 'subscription' = 'payment';
+        if (interval && interval !== 'one-time') {
+            mode = 'subscription';
+            if (interval === 'monthly') {
+                recurring = { interval: 'month', interval_count: 1 } as Stripe.Price.Recurring;
+            } else if (interval === 'quarterly') {
+                recurring = { interval: 'month', interval_count: 3 } as Stripe.Price.Recurring;
+            } else if (interval === 'yearly') {
+                recurring = { interval: 'year', interval_count: 1 } as Stripe.Price.Recurring;
+            } else {
+                // fallback to monthly if unknown
+                recurring = { interval: 'month', interval_count: 1 } as Stripe.Price.Recurring;
             }
-        ],
-        mode: 'payment',
-        // Collect billing address and phone number from donor
-        billing_address_collection: 'required',
-        phone_number_collection: { enabled: true },
-        success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/?canceled=true`,
-
-        // metadata for identifying payment
-        metadata: {
-            source: itemId ? 'product-purchase' : 'donation-form',
-            ...(itemId && { itemId: String(itemId) }) // Include itemId if provided
         }
-        })
+
+        // Build allowed payment method types. Add ACH (`us_bank_account`) and
+        // disallow crypto for subscription mode because Stripe doesn't support
+        // crypto as a recurring payment method.
+        const availablePaymentMethods = ['card', 'cashapp', 'crypto', 'link', 'us_bank_account'];
+        const payment_method_types = mode === 'subscription'
+            ? availablePaymentMethods.filter((m) => m !== 'crypto')
+            : availablePaymentMethods;
+
+        // Build session parameters (no automatic tax or tax metadata)
+        const sessionParams: Stripe.Checkout.SessionCreateParams = {
+            payment_method_types: payment_method_types as unknown as Stripe.Checkout.SessionCreateParams.PaymentMethodType[],
+            line_items: [
+                {
+                    price_data: {
+                        currency,
+                        product_data: {
+                            name: body.name || 'Donation',
+                            description: body.description || 'Thanks for supporting us'
+                        },
+                        unit_amount: amountInCents,
+                        ...(recurring ? { recurring } : {}),
+                    },
+                    quantity: 1
+                }
+            ],
+            mode,
+            billing_address_collection: 'required',
+            phone_number_collection: { enabled: true },
+            success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${origin}/?canceled=true`,
+            metadata: {
+                source: body.source || 'donation-form',
+                interval: interval,
+                anonymous: body.anonymous ? String(body.anonymous) : 'false',
+                cover_fees: body.coverFees ? String(body.coverFees) : 'false',
+            }
+        };
+
+        const session = await stripe.checkout.sessions.create(sessionParams);
 
         // Return the session URL as JSON to client for redirect
         return NextResponse.json({ url: session.url }, { status: 201 })

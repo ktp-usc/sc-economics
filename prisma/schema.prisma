@@ -1,3 +1,9 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
@@ -14,25 +20,26 @@ model Item {
   type        PurchaseType
   description String
   price       Float
+  status      Status       @default(Active)
   available   Int
   createdAt   DateTime     @default(now())
-  image       String       @default("https://media.licdn.com/dms/image/C4D0BAQHtbhjNR_mP_A/company-logo_200_200/0/1630567346569/sc_economics_logo?e=2147483647&v=beta&t=tOe_QxJ6BhwZ3-dxGehJ-dC5IXtjRtHqdvVH1y0bgvk")
-  status      Status       @default(Active)
+  image       String
 }
 
 model Purchase {
   id        String         @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String
+  addressId String         @unique
+  address   Address?       @relation(fields: [addressId], references: [id])
   itemName  String
   amount    Float
+  stripeSessionId String?  @unique
   type      PurchaseType
   reason    String
   date      DateTime       @default(now())
   status    PurchaseStatus
-  addressId String         @unique
-  email     String
-  firstName String
-  lastName  String
-  address   Address        @relation(fields: [addressId], references: [id])
 }
 
 model Address {
@@ -45,10 +52,13 @@ model Address {
   purchase Purchase?
 }
 
-model admin {
-  id       String @id @default(uuid())
-  username String
-  password String
+model DonationOption {
+  id        String   @id @default(uuid())
+  name      String
+  amount    Float
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum PurchaseType {
@@ -67,4 +77,15 @@ enum PurchaseStatus {
 enum Status {
   Active
   Inactive
+}
+
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
 }

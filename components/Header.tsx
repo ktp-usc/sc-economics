@@ -1,5 +1,7 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import {LogIn} from "lucide-react";
 
 interface HeaderProps {
     currentPage: 'fees' | 'donation' | 'info' | 'admin';
@@ -27,20 +29,31 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
                         </div>
                     </div>
 
-                    <div className="flex items-center space-x-2">
+                    {/* Navigation buttons */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
                         <Button
                             variant={currentPage === 'fees' ? 'default' : 'ghost'}
                             onClick={() => onNavigate('fees')}
-                            className="px-6"
+                            className="px-6 w-full sm:w-auto"
                         >
                             Workshop Fees
                         </Button>
                         <Button
                             variant={currentPage === 'donation' ? 'default' : 'ghost'}
                             onClick={() => onNavigate('donation')}
-                            className="px-6"
+                            className="px-6 w-full sm:w-auto"
                         >
                             Make a Donation
+                        </Button>
+                        <Button
+                            asChild
+                            variant="outline"
+                            className="px-6 w-full sm:w-auto flex items-center gap-2"
+                        >
+                            <Link href="/login">
+                                <LogIn className="h-4 w-4" />
+                                Admin Login
+                            </Link>
                         </Button>
                     </div>
                 </div>
