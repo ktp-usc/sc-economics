@@ -46,12 +46,17 @@ export function ProductCatalog({onRegisterNow}: ProductCatalogProps) {
             setError(null);
             try {
                 const res = await fetch("/api/item/active");
-                if (!res.ok) throw new Error(`Fetch failed (${res.status})`);
+                if (!res.ok) {
+                    setError(`Fetch failed (${res.status})`);
+                    setLoading(false);
+                    return;
+                }
                 const data = await res.json();
 
                 function toProduct(input: unknown): Product | null {
                     if (typeof input !== 'object' || input === null) return null
                     const obj = input as Record<string, unknown>
+                    console.log("obj", obj)
 
                     const rawAvailable = obj['available']
                     let available: number | null = null
@@ -72,7 +77,7 @@ export function ProductCatalog({onRegisterNow}: ProductCatalogProps) {
                         price: Number(obj['price'] ?? 0),
                         description: String(obj['description'] ?? ''),
                         image: String(obj['image'] ?? ''),
-                        category: obj['category'] ? String(obj['category']) : 'Uncategorized',
+                        category: obj['type'] ? String(obj['type']) : 'Uncategorized',
                         inStock,
                     }
                 }

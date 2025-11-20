@@ -33,7 +33,7 @@ export default async function SuccessPage({ searchParams }: PageProps) {
 		const anonymousFlag = !!(session.metadata && (session.metadata.anonymous === 'true' || session.metadata.anonymous === '1' || session.metadata.anonymous === 'yes'));
 		// Check whether donor chose to cover processing fees
 		const coverFeesFlag = !!(session.metadata && (session.metadata.cover_fees === 'true' || session.metadata.cover_fees === '1' || session.metadata.cover_fees === 'yes'));
-        
+
 
 		// Extract primary line item info (with runtime guards because Stripe types can be unions)
 		const line = session.line_items?.data?.[0];
@@ -187,6 +187,37 @@ export default async function SuccessPage({ searchParams }: PageProps) {
 				.join(', ')
 			: '';
 
+        // Decrement inventory if this is a product purchase
+        if (session.payment_status === 'paid' && session.metadata?.itemId) {
+            const itemId = session.metadata.itemId;
+            try {
+                // Check if item exists and get current availability
+                const item = await prisma.item.findUnique({
+                    where: { id: itemId },
+                    select: { available: true }
+                });
+
+                if (item && item.available > 0) {
+                    await prisma.item.update({
+                        where: { id: itemId },
+                        data: {
+                            available: {
+                                decrement: 1
+                            }
+                        }
+                    });
+                    console.log(`Decremented inventory for item ${itemId}. New count: ${item.available - 1}`);
+                } else if (item && item.available === 0) {
+                    console.warn(`Item ${itemId} already at 0 availability, skipping decrement`);
+                } else {
+                    console.error(`Item not found: ${itemId}`);
+                }
+            } catch (error) {
+                // Log error but don't fail the success page
+                console.error('Error decrementing inventory:', error);
+            }
+        }
+
 		return (
 			<div className="min-h-screen bg-background flex items-center justify-center p-6">
 				<Card className="w-full max-w-3xl">
@@ -222,7 +253,7 @@ export default async function SuccessPage({ searchParams }: PageProps) {
 									{coverFeesFlag ? (
 										<div className="text-sm text-muted-foreground mt-2">Processing fees were covered by donor.</div>
 									) : null}
-                                    
+
 								</div>
 							</div>
 

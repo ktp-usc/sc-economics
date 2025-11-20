@@ -11,6 +11,8 @@ export async function POST(req: Request): Promise<NextResponse> {
         const currency = (body.currency || 'usd').toLowerCase()
         // interval: 'one-time' | 'monthly' | 'quarterly' | 'yearly'
         const interval = (body.interval || 'one-time').toString();
+        const productName = body.productName // Optional: for product purchases
+        const itemId = body.itemId // Optional: for product purchases
 
         // Validation
         if (rawAmount == null) {
