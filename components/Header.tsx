@@ -32,18 +32,18 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
                     {/* Navigation buttons */}
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
                         <Button
-                            variant={currentPage === 'fees' ? 'default' : 'ghost'}
-                            onClick={() => onNavigate('fees')}
-                            className="px-6 w-full sm:w-auto"
-                        >
-                            Workshop Fees
-                        </Button>
-                        <Button
                             variant={currentPage === 'donation' ? 'default' : 'ghost'}
                             onClick={() => onNavigate('donation')}
                             className="px-6 w-full sm:w-auto"
                         >
                             Make a Donation
+                        </Button>
+                        <Button
+                            variant={currentPage === 'fees' ? 'default' : 'ghost'}
+                            onClick={() => onNavigate('fees')}
+                            className="px-6 w-full sm:w-auto"
+                        >
+                            Workshop Fees
                         </Button>
                         <Button
                             asChild

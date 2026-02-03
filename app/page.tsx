@@ -12,7 +12,7 @@ import {Header} from "@/components/Header";
 type PageType = "fees" | "donation" | "info" | "admin";
 
 export default function Home() {
-    const [currentPage, setCurrentPage] = useState<PageType>("fees");
+    const [currentPage, setCurrentPage] = useState<PageType>("donation");
     const [donationData, setDonationData] = useState<{ amount: number; type: string } | null>(null);
     const [registrationData, setRegistrationData] = useState<{ productId: string; productName: string; productPrice: number } | null>(null);
 
@@ -117,7 +117,8 @@ export default function Home() {
             case "admin":
                 return <AdminPage />; // ⬅️ displays your admin dashboard
             default:
-                return <ProductCatalog onRegisterNow={handleRegisterNow} />;
+                return <DonationPage onContinue={handleDonationContinue} />;
+            // return <ProductCatalog onRegisterNow={handleRegisterNow} />;
         }
     };
     //Purely for testing
