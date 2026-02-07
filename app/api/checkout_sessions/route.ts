@@ -59,7 +59,7 @@ export async function POST(req: Request): Promise<NextResponse> {
         // Build allowed payment method types. Add ACH (`us_bank_account`) and
         // disallow crypto for subscription mode because Stripe doesn't support
         // crypto as a recurring payment method.
-        const availablePaymentMethods = ['card', 'cashapp', 'crypto'];
+        const availablePaymentMethods = ['card', 'crypto'];
         const payment_method_types = mode === 'subscription'
             ? availablePaymentMethods.filter((m) => m !== 'crypto')
             : availablePaymentMethods;
